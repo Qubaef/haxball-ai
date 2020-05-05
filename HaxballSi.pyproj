@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>ab96009a-0f68-4436-a884-aae254d537a6</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>GameController.py</StartupFile>
+    <StartupFile>AiEnviroment.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -22,6 +22,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AiEnviroment.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Ball.py" />
     <Compile Include="CirclePhysical.py" />
     <Compile Include="Collision.py" />

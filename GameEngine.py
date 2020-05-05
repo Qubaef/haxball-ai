@@ -31,9 +31,10 @@ class GameEngine( object ):
     test_mode = False
     wall_bounce = 1.0
 
-    goal_delay = 2000       # in miliseconds
-    start_delay = 2000      # in miliseconds
+    goal_delay = 0       # in miliseconds
+    start_delay = 0      # in miliseconds
     delay_counter = 0
+
     play_mode = 1
     # play_mode flags states:
     # play_mode = 0 => game running
@@ -51,6 +52,7 @@ class GameEngine( object ):
     def __init__(self):
         pygame.init()
 
+        self.done = False
         self.screen = pygame.display.set_mode((self.screen_w, self.screen_h))
         self.fps_clock = pygame.time.Clock()
 
@@ -273,6 +275,14 @@ class GameEngine( object ):
             self.team_left.add_point()
 
         self.play_mode = -2
+        self.done = True
+
+    # quit python game
+    def quit(self):
+        self.players.clear()
+        self.balls.clear()
+        self.sectors.clear()
+        pygame.quit()
                                 
 
     def game_state_manager(self):

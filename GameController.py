@@ -9,81 +9,76 @@ from Player import Player
 from GameEngine import GameEngine
 from Ball import Ball
 
-# initialize game, ball, and player
-game = GameEngine()
-ball = Ball(game, 500, 300, 0)
-player = Player(game, 400, 300, 1, (0, 0, 255))
+class GameController( object ):
 
-game.new_ball(ball)
-game.new_player(player)
+    def __init__(self):
+        # initialize game, ball, and player
+        self.game = GameEngine()
 
-player.border_color = (255,255,0)
+        self.ball = Ball(self.game, 500, 300, 0)
+        self.game.new_ball(self.ball)
 
-# create bots
-bots = []
-bots_number = 5
-for i in range(0,bots_number):
-   bots.append(Player(game, game.screen_w * random.uniform(0,1), game.screen_h * random.uniform(0,1), i + 2, (255, 0, 0)))
-   game.new_player(bots[i])
+        self.player1 = Player(self.game, 400, 300, 1, (0, 0, 255))
+        self.game.new_player(self.player1)
 
-done = False
+        self.player2 = Player(self.game, 400, 300, 1, (0, 0, 255))
+        self.game.new_player(self.player2)
 
-# main loop of the game
-while not done:
+        # movement options
+        # 0 = v(-1,-1) # 1 = v( 0,-1) # 2 = v( 1, 1)
+        # 3 = v(-1, 0)                # 4 = v( 1, 0)
+        # 5 = v(-1, 1) # 6 = v( 0, 1) # 7 = v( 1, 1)
 
-    player.mouse_pos = pygame.mouse.get_pos()
-
-    # get user input
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            done = True
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_t:
-                if game.test_mode:
-                    game.test_mode = False
-                else:
-                    game.test_mode = True
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_SPACE:
-                player.mode_normal()
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            player.kick(player.mouse_pos)
-
-        if done != True:
-            player_move = pygame.math.Vector2(0,0)
-            input = pygame.key.get_pressed()
-            if input[K_w]:
-                player_move += (0,-1)
-            if input[K_s]:
-                player_move += (0,1)
-            if input[K_d]:
-                player_move += (1,0)
-            if input[K_a]:
-                player_move += (-1,0)
-            if input[K_r]:
-                # cross ball from left top corner position
-                ball.set_move((15,15), (0,0))
-            if input[K_SPACE]:
-                # turn on better ball control
-                player.mode_ball_control()
-            if input[K_ESCAPE]:
-                done = True
-    
-
-    if game.play_mode == 0:
-        if player_move.length() > 0:
-            # make player move with equal speed in all directions
-            player_move = player_move.normalize()
-        # move player depending on keyboard input
-        player.velocity_add(player_move)
-
-        # move bots
-        for i in range(0,bots_number):
-            if game.bots_timer > 100 * i:
-                dir = (ball.p - bots[i].p).normalize()
-                bots[i].set_move((bots[i].v_max * random.uniform(0,1) * dir.x,(bots[i].v_max * random.uniform(0,1) * dir.y)), (-1, -1))    
+        self.states_translation_array = [None] * 8
+        self.states_translation_array[0] = pygame.math.Vector2(-1,-1).normalize()
+        self.states_translation_array[1] = pygame.math.Vector2(0,-1).normalize()
+        self.states_translation_array[2] = pygame.math.Vector2(1, 1).normalize()
+        self.states_translation_array[3] = pygame.math.Vector2(-1, 0).normalize()
+        self.states_translation_array[4] = pygame.math.Vector2(1, 0).normalize()
+        self.states_translation_array[5] = pygame.math.Vector2(-1, 1).normalize()
+        self.states_translation_array[6] = pygame.math.Vector2(0, 1).normalize()
+        self.states_translation_array[7] = pygame.math.Vector2(1, 1).normalize()
         
-        if game.bots_timer > 100 * bots_number:
-            game.bots_timer = 0
+    def next_frame(self, input_player1, input_player2):
 
-    game.redraw()
+        # Player's input is formated as follows:
+        # [0] - number from range <0,7> - used to determine direction of player's movement
+        # [1] - integer - used to determine if player is in ball controll mode (0 - normal mode, 1 - ball control mode)
+        # [2] - integer - used to determine if player attempts to kick the ball (0 - no attempt, !0 - attempt)
+        # [3] - tuple of 2 numbers (a,b) - used to kick the ball if [2] was 1
+
+        # set players moves
+        self.player1.velocity_add(self.states_translation_array[input_player1[0]])
+        self.player2.velocity_add(self.states_translation_array[input_player2[0]])
+
+        # set ball control
+        if input_player1[1] == 0:
+            self.player1.mode_normal()
+        else:
+            self.player1.mode_ball_control()
+
+        if input_player2[1] == 0:
+            self.player2.mode_normal()
+        else:
+            self.player2.mode_ball_control()
+
+        # kick the ball
+        if input_player1[2] == 1:
+            self.player1.kick(input_player1[3])
+        
+        if input_player1[2] == 1:
+            self.player2.kick(input_player2[3])
+
+        # render next frame
+        self.game.redraw()
+
+        # return rendered state pack
+        return self.create_state_pack()
+
+
+    def create_state_pack(self):
+        # TODO
+        return 1
+
+    def game_quit(self):
+        self.game.quit()
