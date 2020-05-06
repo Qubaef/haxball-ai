@@ -2,7 +2,6 @@ import pygame
 import sys
 import math
 import random
-import itertools
 
 from pygame.locals import *
 from Post import Post
@@ -10,8 +9,7 @@ from Player import Player
 from GameEngine import GameEngine
 from Ball import Ball
 
-
-class GameController(object):
+class GameController( object ):
 
     def __init__(self):
         # initialize game, ball, and player
@@ -32,17 +30,15 @@ class GameController(object):
         # 5 = v(-1, 1) # 6 = v( 0, 1) # 7 = v( 1, 1)
 
         self.states_translation_array = [None] * 8
-        self.states_translation_array[0] = pygame.math.Vector2(-1, -1).normalize()
-        self.states_translation_array[1] = pygame.math.Vector2(0, -1).normalize()
+        self.states_translation_array[0] = pygame.math.Vector2(-1,-1).normalize()
+        self.states_translation_array[1] = pygame.math.Vector2(0,-1).normalize()
         self.states_translation_array[2] = pygame.math.Vector2(1, 1).normalize()
         self.states_translation_array[3] = pygame.math.Vector2(-1, 0).normalize()
         self.states_translation_array[4] = pygame.math.Vector2(1, 0).normalize()
         self.states_translation_array[5] = pygame.math.Vector2(-1, 1).normalize()
         self.states_translation_array[6] = pygame.math.Vector2(0, 1).normalize()
         self.states_translation_array[7] = pygame.math.Vector2(1, 1).normalize()
-
-        self.possible_inputs = list(itertools.product(range(8), range(2), range(2), (0, 0)))
-
+        
     def next_frame(self, input_player1, input_player2):
 
         # Player's input is formated as follows:
@@ -52,39 +48,35 @@ class GameController(object):
         # [3] - tuple of 2 numbers (a,b) - used to kick the ball if [2] was 1
 
         # set players moves
-        self.player1.velocity_add(self.states_translation_array[self.possible_inputs[input_player1][0]])
-        self.player2.velocity_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
+        self.player1.velocity_add(self.states_translation_array[input_player1[0]])
+        self.player2.velocity_add(self.states_translation_array[input_player2[0]])
 
         # set ball control
-        if self.possible_inputs[input_player2][1] == 0:
+        if input_player1[1] == 0:
             self.player1.mode_normal()
         else:
             self.player1.mode_ball_control()
 
-        if self.possible_inputs[input_player2][1] == 0:
+        if input_player2[1] == 0:
             self.player2.mode_normal()
         else:
             self.player2.mode_ball_control()
 
         # kick the ball
-        if self.possible_inputs[input_player1][2] == 1:
-            self.player1.kick(self.possible_inputs[input_player1][3])
-
-        if self.possible_inputs[input_player2][2] == 1:
-            self.player2.kick(self.possible_inputs[input_player2][3])
+        if input_player1[2] == 1:
+            self.player1.kick(input_player1[3])
+        
+        if input_player1[2] == 1:
+            self.player2.kick(input_player2[3])
 
         # render next frame
         self.game.redraw()
 
         # return rendered state pack
-        return self.get_state(), self.get_reward, self.game.is_done()
+        return self.create_state_pack()
 
-    def get_state(self):
-        return [self.player1.p, self.player1.v, self.player2.ball_control, self.ball.p, self.ball.v, self.player2.p,
-                self.player2.v, self.player2.ball_control]
 
-    def get_reward(self, state, player):
-        # player - integer - determines the player for which reward is calculated
+    def create_state_pack(self):
         # TODO
         return 1
 
