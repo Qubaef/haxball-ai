@@ -308,3 +308,6 @@ class GameEngine( object ):
     def positions_reset(self):
         for obj in self.balls:
             obj.set_move((0,0),(self.screen_w / 2, self.screen_h / 2))
+
+    def is_done(self):
+        return self.done
