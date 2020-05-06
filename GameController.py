@@ -80,5 +80,14 @@ class GameController( object ):
         # TODO
         return 1
 
+    
+    def generate_current_reward(self):
+        # TODO
+        reward_player1 = -(self.player1.p - self.ball.p).length()
+
+        reward_player2 = -(self.player2.p - self.ball.p).length()
+
+        return reward_player1, reward_player2
+
     def game_quit(self):
         self.game.quit()
