@@ -8,9 +8,9 @@ class CirclePhysical( ABC ):
         self.game = game
         self.number = number
         self.weight = weight
-        self.size = size                                # size used for drawing and collision detection
-        self.hitbox = int(size * 3 / 2)                   # hitbox used for kicking the ball
-        self.v_max = 6 / math.pow(self.weight, 2 / 3)     # maximum velocity is non-linear, cause ball was too fast
+        self.size = size                                    # size used for drawing and collision detection
+        self.hitbox = int(size * 3 / 2)                     # hitbox used for kicking the ball
+        self.v_max = 6 / math.pow(self.weight, 2 / 3)       # maximum velocity is non-linear, cause ball was too fast
         self.friction = self.weight * 0.2
         self.color = color
         self.border_color = (0,0,0)

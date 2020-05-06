@@ -49,6 +49,7 @@ class GameEngine(object):
     team1_color = (0, 0, 255)
     team2_color = (255, 0, 0)
 
+
     def __init__(self):
         pygame.init()
 
@@ -69,6 +70,7 @@ class GameEngine(object):
 
         self.team_right = Team(self, self.team1_color, self.goal_right, 1)
         self.team_left = Team(self, self.team2_color, self.goal_left, -1)
+
 
     def draw_background(self):
         # draw backgroud
@@ -175,8 +177,10 @@ class GameEngine(object):
         pygame.gfxdraw.aacircle(self.screen, int(self.goal_right.post_down.p.x), int(self.goal_right.post_down.p.y),
                                 self.goal_right.post_down.size, self.goal_right.post_down.color)
 
+
     def clock_tick(self):
         return self.fps_clock.tick(self.fps)
+
 
     def new_player(self, player, team_number=None):
         # add new player to the game and team
@@ -193,8 +197,10 @@ class GameEngine(object):
             else:
                 self.team_right.add_player(player)
 
+
     def new_ball(self, ball):
         self.balls.append(ball)
+
 
     def redraw(self):
 
@@ -221,12 +227,14 @@ class GameEngine(object):
         # update the screen
         pygame.display.update()
 
+
     def update(self):
         # update object's positions
         for obj in self.players:
             obj.update()
         for obj in self.balls:
             obj.update()
+
 
     def display_redraw(self):
         # redraw board and players
@@ -287,9 +295,11 @@ class GameEngine(object):
             self.screen.blit(obj.ballImage,
                              pygame.rect.Rect(obj.p.x - obj.size, obj.p.y - obj.size, obj.size, obj.size))
 
+
     # fix objects position, to prevent walls collisions
     def walls_collision(self, obj):
         Collision.walls_collision(obj, self)
+
 
     # set game state to -2
     # add point to team which scored
@@ -302,12 +312,14 @@ class GameEngine(object):
         self.play_mode = -2
         self.done = True
 
+
     # quit python game
     def quit(self):
         self.players.clear()
         self.balls.clear()
         self.sectors.clear()
         pygame.quit()
+
 
     def game_state_manager(self):
         if self.play_mode == -2:
@@ -329,9 +341,11 @@ class GameEngine(object):
             # if delay passed, start the game
             self.play_mode = 0
 
+
     def positions_reset(self):
         for obj in self.balls:
             obj.set_move((0, 0), (self.screen_w / 2, self.screen_h / 2))
+
 
     def is_done(self):
         return self.done

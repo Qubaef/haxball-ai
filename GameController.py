@@ -11,7 +11,7 @@ from GameEngine import GameEngine
 from Ball import Ball
 
 
-class GameController(object):
+class GameController( object ):
 
     def __init__(self):
         # initialize game, ball, and player
@@ -79,14 +79,27 @@ class GameController(object):
         # return rendered state pack
         return self.get_state(), self.get_reward, self.game.is_done()
 
-    def get_state(self):
-        return [self.player1.p, self.player1.v, self.player2.ball_control, self.ball.p, self.ball.v, self.player2.p,
-                self.player2.v, self.player2.ball_control]
 
-    def get_reward(self, state, player):
+    def get_state(self):
+        # returns array of states for current frame
+        return [self.player1.p.x, self.player1.p.y,
+               self.player1.v.x, self.player1.v.y, 
+               self.player1.ball_control,
+               self.player2.p.x, self.player2.p.y,
+               self.player2.v.x, self.player2.v.y,
+               self.player2.ball_control,
+               self.ball.p.x, self.ball.p.y, 
+               self.ball.v.x,  self.ball.v.y]
+
+
+    def get_reward(self):
         # player - integer - determines the player for which reward is calculated
-        # TODO
-        return 1
+        # TODO: finish reward function (current state is temporary)
+
+        reward_player1 = (self.player1.p - self.ball.p).normalize()
+        reward_player2 = (self.player2.p - self.ball.p).normalize()
+
+        return [reward_player1, reward_player2]
 
     def game_quit(self):
         self.game.quit()
