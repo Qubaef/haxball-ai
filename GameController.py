@@ -3,6 +3,7 @@ import sys
 import math
 import random
 import itertools
+import numpy as np
 
 from pygame.locals import *
 from Post import Post
@@ -41,7 +42,7 @@ class GameController( object ):
         self.states_translation_array[6] = pygame.math.Vector2(0, 1).normalize()
         self.states_translation_array[7] = pygame.math.Vector2(1, 1).normalize()
 
-        self.possible_inputs = list(itertools.product(range(8), range(2), range(2), [(0,0)]))
+        self.possible_inputs = list(itertools.product(range(8), range(2), range(2), [(0, 0)]))
 
     def next_frame(self, input_player1, input_player2):
 

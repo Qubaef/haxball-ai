@@ -309,6 +309,10 @@ class GameEngine( object ):
 
         self.done = True
 
+    def restart(self):
+        self.play_mode = -2
+        self.done = True
+
 
     # quit python game
     def quit(self):
