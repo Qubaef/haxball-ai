@@ -5,8 +5,9 @@ from DQN import DQN
 env = GameController()
 dqn = DQN(len(env.get_state()), 32)
 
-for episode in range(100):
-    #env.game.restart()
+for episode in range(1000):
+    print(episode)
+    env.game.game_reset()
     state = env.get_state()
     state = np.reshape(state,[1, len(state)])
     for t in range(1000):

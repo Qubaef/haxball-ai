@@ -31,11 +31,13 @@ class DQN:
         model.add(tf.keras.layers.Dense(24, input_dim=self.input_count, activation='relu'))
         model.add(tf.keras.layers.Dense(24, activation='relu'))
         model.add(tf.keras.layers.Dense(self.output_count, activation='linear'))
+
         model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate))
-        import os
-        os.environ["PATH"] += os.pathsep + 'C:\Program Files (x86)\Graphviz2.38/bin/'
-        tf.keras.utils.plot_model(model, to_file='model.png', show_shapes = True, expand_nested = True)
-        print(model.summary())
+        # import os
+        # os.environ["PATH"] += os.pathsep + 'C:\Program Files (x86)\Graphviz2.38/bin/'
+        # tf.keras.utils.plot_model(model, to_file='model.png', show_shapes = True, expand_nested = True)
+        # print(model.summary())
+
         return model
 
     def memorize(self, state, action, reward, next_state, done):
