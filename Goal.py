@@ -1,3 +1,4 @@
+import pygame
 from Post import Post
 from Collision import Collision
 
@@ -30,3 +31,11 @@ class Goal( object ):
 
     def get_height(self):
         return self.y_down - self.y_up
+
+    def get_dist(self, position_vector):
+        if position_vector.y > self.y_up:
+            return -(position_vector - self.post_up.p).length() / 10
+        elif position_vector.y < self.y_down:
+            return -(position_vector - self.post_down.p).length() / 10
+        else:
+            return -(position_vector - pygame.math.Vector2(self.x,self.y_up + int(width/2))).length() / 10

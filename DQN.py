@@ -21,6 +21,7 @@ class DQN:
         self.model = self.define_model()
         # self.session.run(self.initializer)
 
+
     def define_model(self):
         # Initialization of tensorflow model
         # I hava no idea wtf I am doing and I don't how does it work
