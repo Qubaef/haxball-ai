@@ -26,7 +26,7 @@ class GameEngine( object ):
 
     sector_size = 50
 
-    fps = 60
+    fps = 1000
     bots_timer = 0
     test_mode = False
     wall_bounce = 1.0
@@ -218,10 +218,10 @@ class GameEngine( object ):
             self.update()
 
         # redraw whole board
-        self.display_redraw()
+        #self.display_redraw()
 
         # update the screen
-        pygame.display.update()
+        #pygame.display.update()
 
 
     def update(self):
