@@ -8,7 +8,7 @@ from Team import Team
 from Collision import Collision
 
 
-class GameEngine(object):
+class GameEngine( object ):
     # object containing Game's data
 
     screen_w = 1100
@@ -31,8 +31,8 @@ class GameEngine(object):
     test_mode = False
     wall_bounce = 1.0
 
-    goal_delay = 0  # in miliseconds
-    start_delay = 0  # in miliseconds
+    goal_delay = 0      # in miliseconds
+    start_delay = 0     # in miliseconds
     delay_counter = 0
 
     play_mode = 1
@@ -43,8 +43,8 @@ class GameEngine(object):
     # play_mode = 1 => game freezed, players and ball set on the right positions, waiting time not initialized (set at the beginning of the game and after -1 state (after goal score cooldown))
     # play_mode = 2 => game freezed, players and ball set on the right positions, waiting time initialized (set after 1 state; after time counter drops to 0, game starts)
 
-    balls = []  # list containing balls
-    players = []  # list containing players
+    balls = []      # list containing balls
+    players = []    # list containing players
 
     team1_color = (0, 0, 255)
     team2_color = (255, 0, 0)
@@ -143,19 +143,15 @@ class GameEngine(object):
                                      self.border_width * 3, self.border_color)
 
         # draw goals and borders
-        pygame.draw.rect(self.screen, self.border_color, (
-        self.goal_left.get_px() - self.border_width, self.goal_left.get_py() - self.border_width,
+        pygame.draw.rect(self.screen, self.border_color, (self.goal_left.get_px() - self.border_width, self.goal_left.get_py() - self.border_width,
         self.goal_left.get_width() + self.border_width - 1, self.goal_left.get_height() + self.border_width * 2 - 1),
                          self.border_width)
-        pygame.draw.rect(self.screen, self.goal_left.color, (
-        self.goal_left.get_px(), self.goal_left.get_py(), self.goal_left.get_width(), self.goal_left.get_height()))
+        pygame.draw.rect(self.screen, self.goal_left.color, (self.goal_left.get_px(), self.goal_left.get_py(), self.goal_left.get_width(), self.goal_left.get_height()))
 
-        pygame.draw.rect(self.screen, self.border_color, (
-        self.goal_right.get_px(), self.goal_right.get_py() - self.border_width,
+        pygame.draw.rect(self.screen, self.border_color, (self.goal_right.get_px(), self.goal_right.get_py() - self.border_width,
         self.goal_right.get_width() + self.border_width - 1, self.goal_right.get_height() + self.border_width * 2 - 1),
                          self.border_width)
-        pygame.draw.rect(self.screen, self.goal_right.color, (
-        self.goal_right.get_px(), self.goal_right.get_py(), self.goal_right.get_width(), self.goal_right.get_height()))
+        pygame.draw.rect(self.screen, self.goal_right.color, (self.goal_right.get_px(), self.goal_right.get_py(), self.goal_right.get_width(), self.goal_right.get_height()))
 
         # draw posts
         pygame.gfxdraw.filled_circle(self.screen, int(self.goal_left.post_up.p.x), int(self.goal_left.post_up.p.y),
@@ -252,16 +248,14 @@ class GameEngine(object):
                                int(obj.p.x / self.sector_size) + sector_num + 1):
                     for j in range(int(obj.p.y / self.sector_size) - sector_num,
                                    int(obj.p.y / self.sector_size) + sector_num + 1):
-                        pygame.draw.rect(self.screen, (0, 255 - ((i + j) % 2) * 50, 0), (
-                        i * self.sector_size, j * self.sector_size, int(self.sector_size), int(self.sector_size)))
+                        pygame.draw.rect(self.screen, (0, 255 - ((i + j) % 2) * 50, 0), (i * self.sector_size, j * self.sector_size, int(self.sector_size), int(self.sector_size)))
             for obj in self.balls:
                 sector_num = int(obj.size * 4 / self.sector_size)
                 for i in range(int(obj.p.x / self.sector_size) - sector_num,
                                int(obj.p.x / self.sector_size) + sector_num + 1):
                     for j in range(int(obj.p.y / self.sector_size) - sector_num,
                                    int(obj.p.y / self.sector_size) + sector_num + 1):
-                        pygame.draw.rect(self.screen, (0, 255 - ((i + j) % 2) * 50, 0), (
-                        int(obj.p.x / self.sector_size) * self.sector_size,
+                        pygame.draw.rect(self.screen, (0, 255 - ((i + j) % 2) * 50, 0), (int(obj.p.x / self.sector_size) * self.sector_size,
                         int(obj.p.y / self.sector_size) * self.sector_size, int(self.sector_size),
                         int(self.sector_size)))
 
@@ -309,7 +303,10 @@ class GameEngine(object):
         else:
             self.team_left.add_point()
 
-        self.play_mode = -2
+        # for AI purpose, after goalscore game goes right to the state = 1
+        # self.play_mode = -2
+        self.play_mode = 1
+
         self.done = True
 
 
@@ -349,3 +346,9 @@ class GameEngine(object):
 
     def is_done(self):
         return self.done
+
+    # reset game
+    def game_reset(self):
+        self.play_mode = 1
+        self.team_left.score = 0
+        self.team_right.score = 0
