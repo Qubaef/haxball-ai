@@ -10,9 +10,7 @@ class DQN:
 
         self.input_count = state_size
         self.output_count = actions_number
-
-        self.memory = col.deque(maxlen=1000)
-
+        self.memory = col.deque(maxlen=300)
         self.discount_factor = 0.9
         self.epsilon = 1
         self.epsilon_min_val = 0.05
@@ -29,10 +27,14 @@ class DQN:
         # Tensorflow documentation sucks for me
         # TODO
         model = tf.keras.Sequential()
-        model.add(tf.keras.layers.Dense(12, input_dim=self.input_count, activation='relu'))
-        model.add(tf.keras.layers.Dense(12, activation='relu'))
+        model.add(tf.keras.layers.Dense(24, input_dim=self.input_count, activation='relu'))
+        model.add(tf.keras.layers.Dense(24, activation='relu'))
         model.add(tf.keras.layers.Dense(self.output_count, activation='linear'))
         model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate))
+        import os
+        os.environ["PATH"] += os.pathsep + 'C:\Program Files (x86)\Graphviz2.38/bin/'
+        tf.keras.utils.plot_model(model, to_file='model.png', show_shapes = True, expand_nested = True)
+        print(model.summary())
         return model
 
     def memorize(self, state, action, reward, next_state, done):
