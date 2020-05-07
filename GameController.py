@@ -41,7 +41,7 @@ class GameController( object ):
         self.states_translation_array[6] = pygame.math.Vector2(0, 1).normalize()
         self.states_translation_array[7] = pygame.math.Vector2(1, 1).normalize()
 
-        self.possible_inputs = list(itertools.product(range(8), range(2), range(2), (0, 0)))
+        self.possible_inputs = list(itertools.product(range(8), range(2), range(2), [(0,0)]))
 
     def next_frame(self, input_player1, input_player2):
 
@@ -52,6 +52,7 @@ class GameController( object ):
         # [3] - tuple of 2 numbers (a,b) - used to kick the ball if [2] was 1
 
         # set players moves
+
         self.player1.velocity_add(self.states_translation_array[self.possible_inputs[input_player1][0]])
         self.player2.velocity_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
 
@@ -67,17 +68,23 @@ class GameController( object ):
             self.player2.mode_ball_control()
 
         # kick the ball
+        ballkick_player1 = 0
         if self.possible_inputs[input_player1][2] == 1:
-            self.player1.kick(self.possible_inputs[input_player1][3])
+            ballkick_player1 = self.player1.kick(self.possible_inputs[input_player1][3])
 
+        ballkick_player2 = 0
         if self.possible_inputs[input_player2][2] == 1:
-            self.player2.kick(self.possible_inputs[input_player2][3])
+            ballkick_player2 = self.player2.kick(self.possible_inputs[input_player2][3])
 
         # render next frame
         self.game.redraw()
 
+        # analyse ball velocity vector
+        # TODO
+
+
         # return rendered state pack
-        return self.get_state(), self.get_reward, self.game.is_done()
+        return self.get_state(), self.get_reward((ballkick_player1, ballkick_player2), ()), self.game.is_done()
 
 
     def get_state(self):
@@ -92,14 +99,28 @@ class GameController( object ):
                self.ball.v.x,  self.ball.v.y]
 
 
-    def get_reward(self):
-        # player - integer - determines the player for which reward is calculated
-        # TODO: finish reward function (current state is temporary)
+    def get_reward(self, ballkicks, goal):
+        # get distance between player1 and the ball
+        reward_player1 = -(self.player1.p - self.ball.p).length() / 50
 
-        reward_player1 = (self.player1.p - self.ball.p).normalize()
-        reward_player2 = (self.player2.p - self.ball.p).normalize()
+        # get distance between ball and the opponent's goal
+        if self.game.team_left.players[0] == self.player1:
+            reward_player1 += self.game.team_right.goal.get_dist(self.ball.p)
+        else:
+            reward_player1 += self.game.team_left.goal.get_dist(self.ball.p)
 
-        return [reward_player1, reward_player2]
+
+        # get distance between player1 and the ball
+        reward_player2 = (self.player2.p - self.ball.p).length()
+
+        # get distance between ball and the opponent's goal
+        if self.game.team_left.players[0] == self.player2:
+            reward_player2 += self.game.team_right.goal.get_dist(self.ball.p)
+        else:
+            reward_player2 += self.game.team_left.goal.get_dist(self.ball.p)
+
+        return [reward_player1 + (0.1 * ballkicks[0] * 1000), reward_player2 + (0.1 * ballkicks[1] * 1000)]
+
 
     def game_quit(self):
         self.game.quit()
