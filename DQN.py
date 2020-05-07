@@ -4,6 +4,7 @@ import tensorflow as tf
 import _collections as col
 
 
+
 class DQN:
 
     def __init__(self, state_size, actions_number):
@@ -33,15 +34,21 @@ class DQN:
         model.add(tf.keras.layers.Dense(self.output_count, activation='linear'))
 
         model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate))
-        # import os
-        # os.environ["PATH"] += os.pathsep + 'C:\Program Files (x86)\Graphviz2.38/bin/'
-        # tf.keras.utils.plot_model(model, to_file='model.png', show_shapes = True, expand_nested = True)
-        # print(model.summary())
-
+        import os
+        os.environ["PATH"] += os.pathsep + 'C:\Program Files (x86)\Graphviz2.38/bin/'
+        tf.keras.utils.plot_model(model, to_file='model.png', show_shapes = True, expand_nested = True)
+        print(model.summary())
         return model
 
     def memorize(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
+
+    def save_model(self):
+        self.model.save_weights("weights.wgs")
+
+    def load(self):
+        self.model.load_weights("weights.wgs")
+
 
     def learn(self, batch_size):
         batch = random.sample(self.memory, batch_size)
