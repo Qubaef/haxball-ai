@@ -32,12 +32,12 @@ class DQN:
         # Tensorflow documentation sucks for me
 
         model = tf.keras.Sequential()
-        model.add(tf.keras.layers.Dense(24, input_dim = self.input_count, activation='relu'))
-        model.add(tf.keras.layers.Dense(32, activation = 'relu'))
-        model.add(tf.keras.layers.Dense(32, activation = 'relu'))
-        model.add(tf.keras.layers.Dense(self.output_count, activation = 'linear'))
+        model.add(tf.keras.layers.Dense(24, input_dim = self.input_count, activation='relu', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=1)))
+        model.add(tf.keras.layers.Dense(48, input_dim = self.input_count, activation='relu', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=1)))
+        model.add(tf.keras.layers.Dense(64, activation = 'relu', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=1)))
+        model.add(tf.keras.layers.Dense(self.output_count, activation = 'linear', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=1)))
 
-        model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate))
+        model.compile(loss='Huber', optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate))
 
         # save model as model.png
         # os.environ["PATH"] += os.pathsep + 'C:\Program Files (x86)\Graphviz2.38\bin\'

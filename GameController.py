@@ -98,7 +98,7 @@ class GameController( object ):
                     return
 
                 if event.type == pygame.MOUSEBUTTONDOWN and self.display_mode == 2:
-                    print(self.get_reward((ballkick_player1, ballkick_player2), ())[0])
+                    print(self.get_reward((ballkick_player1, ballkick_player2), ())[1])
 
 
         # render next frame

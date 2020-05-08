@@ -5,7 +5,7 @@ from GameController import GameController
 from DQN import DQN
 
 # Constants
-display_mode = 0
+display_mode = 1
 epochs_number = 1000
 frames_per_game_number = 1500
 batch_size = frames_per_game_number / 6
@@ -15,7 +15,7 @@ env = GameController(display_mode)
 # Initalize dqn
 dqn = DQN(env.get_state_length(), env.get_action_length())
 
-dqn.load()
+# dqn.load()
 
 for epoch in range(epochs_number):
     env.game.game_reset()
@@ -65,6 +65,6 @@ for epoch in range(epochs_number):
     # learn and save model
     start_time = time.time()
     dqn.learn()
-    # dqn.save_model()
+    dqn.save_model()
     end_time = time.time()
     print("Learning finished in ", end_time - start_time, " seconds")
