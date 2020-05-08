@@ -27,7 +27,6 @@ class GameEngine( object ):
     sector_size = 50
 
     fps = 60
-    bots_timer = 0
     test_mode = False
     wall_bounce = 1.0
 
@@ -50,12 +49,16 @@ class GameEngine( object ):
     team2_color = (255, 0, 0)
 
 
-    def __init__(self):
-        pygame.init()
+    def __init__(self, display_mode):
+        self.display_mode = display_mode
+
+        if(self.display_mode != 0):
+            pygame.init()
+
+            self.screen = pygame.display.set_mode((self.screen_w, self.screen_h))
+            self.fps_clock = pygame.time.Clock()
 
         self.done = False
-        self.screen = pygame.display.set_mode((self.screen_w, self.screen_h))
-        self.fps_clock = pygame.time.Clock()
 
         # 2D array containing arrays, to store object in the secotrs and optimise collisions
         self.sectors = [[[] for j in range(ceil(self.screen_h / self.sector_size))] for i in
@@ -200,33 +203,28 @@ class GameEngine( object ):
 
     def redraw(self):
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.quit()
-                return
-
         # control game states
         self.game_state_manager()
 
         # dt is time since last tick
-        dt = self.clock_tick()
+        if(self.display_mode != 0):
+            dt = self.clock_tick()
 
-        self.bots_timer += dt
-
-        if self.delay_counter != 0:
-            self.delay_counter -= dt
-        if self.delay_counter < 0:
-            self.delay_counter = 0
+            if self.delay_counter != 0:
+                self.delay_counter -= dt
+            if self.delay_counter < 0:
+                self.delay_counter = 0
 
         if self.play_mode == 0:
             # update objects positions and redraw players
             self.update()
 
+        if(self.display_mode != 0):
         # redraw whole board
-        self.display_redraw()
+            self.display_redraw()
 
         # update the screen
-        pygame.display.update()
+            pygame.display.update()
 
 
     def update(self):

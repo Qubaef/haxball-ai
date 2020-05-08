@@ -34,8 +34,8 @@ class Goal( object ):
 
     def get_dist(self, position_vector):
         if position_vector.y > self.y_up:
-            return -(position_vector - self.post_up.p).length() / 10
+            return -(position_vector - self.post_up.p).length()
         elif position_vector.y < self.y_down:
-            return -(position_vector - self.post_down.p).length() / 10
+            return -(position_vector - self.post_down.p).length()
         else:
-            return -(position_vector - pygame.math.Vector2(self.x,self.y_up + int(width/2))).length() / 10
+            return -(position_vector - pygame.math.Vector2(self.x,self.y_up + int(width/2))).length()
