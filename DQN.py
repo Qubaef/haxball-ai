@@ -3,25 +3,21 @@ import random
 import tensorflow as tf
 import _collections as col
 
-
-
 class DQN:
 
     def __init__(self, state_size, actions_number):
 
         self.input_count = state_size
         self.output_count = actions_number
-        self.memory = col.deque(maxlen=300)
+        self.memory = col.deque(maxlen=1000)
         self.discount_factor = 0.9
         self.epsilon = 1
         self.epsilon_min_val = 0.05
-        self.epsilon_decay = 0.99
+        self.epsilon_decay = 0.995
         self.learning_rate = 0.001
         self.gamma = 0.95
 
         self.model = self.define_model()
-        # self.session.run(self.initializer)
-
 
     def define_model(self):
         # Initialization of tensorflow model
@@ -30,14 +26,15 @@ class DQN:
         # TODO
         model = tf.keras.Sequential()
         model.add(tf.keras.layers.Dense(24, input_dim=self.input_count, activation='relu'))
-        model.add(tf.keras.layers.Dense(24, activation='relu'))
+        model.add(tf.keras.layers.Dense(32, activation='relu'))
         model.add(tf.keras.layers.Dense(self.output_count, activation='linear'))
 
         model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate))
-        import os
-        os.environ["PATH"] += os.pathsep + 'C:\Program Files (x86)\Graphviz2.38/bin/'
-        tf.keras.utils.plot_model(model, to_file='model.png', show_shapes = True, expand_nested = True)
-        print(model.summary())
+
+        # import os
+        # os.environ["PATH"] += os.pathsep + 'C:\Program Files (x86)\Graphviz2.38/bin/'
+        # tf.keras.utils.plot_model(model, to_file='model.png', show_shapes = True, expand_nested = True)
+        # print(model.summary())
         return model
 
     def memorize(self, state, action, reward, next_state, done):
@@ -62,6 +59,8 @@ class DQN:
 
             if self.epsilon > self.epsilon_min_val:
                 self.epsilon *= self.epsilon_decay
+
+            self.memory.clear()
 
     def make_move(self, state):
         if random.random() < self.epsilon:
