@@ -135,21 +135,24 @@ env_for_size = None
 for epoch in range(epochs_number):
 
     # Make copy of dqn_learn to make decisions during this epoch
-    dqn_decide = clone_dqn(dqn_learn)
+    # dqn_decide = clone_dqn(dqn_learn)
 
-    print("Epoch:", epoch, "epsilon:", dqn_decide.epsilon)
+    print("Epoch:", epoch, "epsilon:", dqn_learn.epsilon)
 
     # Play games and save batch
     start_time = time.time()
-    threads = [None] * 4
 
-    for t in range(threads_number):
-        threads[t] = Thread(target = play_games, args = (int(games_per_epoch / threads_number), frames_per_game, display_mode, dqn_decide,))
-        threads[t].start()
+    # threads = [None] * 4
+    # 
+    # for t in range(threads_number):
+    #     threads[t] = Thread(target = play_games, args = (int(games_per_epoch / threads_number), frames_per_game, display_mode, dqn_decide,))
+    #     threads[t].start()
+    # 
+    # # wait for all threads to finish
+    # for t in range(threads_number):
+    #     threads[t].join()
 
-    # wait for all threads to finish
-    for t in range(threads_number):
-        threads[t].join()
+    play_games(games_per_epoch, frames_per_game, display_mode, dqn_learn)
 
     end_time = time.time()
     print(games_per_epoch, "games of", frames_per_game, "frames simulated in", end_time - start_time, "seconds")
