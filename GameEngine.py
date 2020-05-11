@@ -34,16 +34,13 @@ class GameEngine( object ):
     start_delay = 0     # in miliseconds
     delay_counter = 0
 
-    play_mode = 1
+    play_mode = 0
     # play_mode flags states:
     # play_mode = 0 => game running
     # play_mode = -2 => game freezed, players and ball not set on the right positions, waiting time not initialized (set after goal score)
     # play_mode = -1 => game freezed, players and ball not set on the right positions, waiting time initialized (set after goal score and -2 state)
     # play_mode = 1 => game freezed, players and ball set on the right positions, waiting time not initialized (set at the beginning of the game and after -1 state (after goal score cooldown))
     # play_mode = 2 => game freezed, players and ball set on the right positions, waiting time initialized (set after 1 state; after time counter drops to 0, game starts)
-
-    balls = []      # list containing balls
-    players = []    # list containing players
 
     team1_color = (0, 0, 255)
     team2_color = (255, 0, 0)
@@ -59,6 +56,9 @@ class GameEngine( object ):
             self.fps_clock = pygame.time.Clock()
 
         self.done = False
+
+        self.balls = []      # list containing balls
+        self.players = []    # list containing players
 
         # 2D array containing arrays, to store object in the secotrs and optimise collisions
         self.sectors = [[[] for j in range(ceil(self.screen_h / self.sector_size))] for i in
@@ -195,7 +195,9 @@ class GameEngine( object ):
                 self.team_left.add_player(player)
             else:
                 self.team_right.add_player(player)
-
+                
+        self.team_left.reset_positions()
+        self.team_right.reset_positions()
 
     def new_ball(self, ball):
         self.balls.append(ball)
@@ -356,6 +358,9 @@ class GameEngine( object ):
 
     # reset game
     def game_reset(self):
-        self.play_mode = 1
+        self.positions_reset()
+        self.team_left.reset_positions()
+        self.team_right.reset_positions()
+        self.play_mode = 0
         self.team_left.score = 0
         self.team_right.score = 0

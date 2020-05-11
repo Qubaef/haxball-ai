@@ -1,48 +1,43 @@
 import numpy as np
 import random
 import tensorflow as tf
-import _collections as col
 import os
 
 class DQN:
 
-    def __init__(self, state_size, actions_number):
-
-        # set to gpu
-        # if you dont have nvidia gpu, comment lines below
-        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-        os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    def __init__(self, state_size, actions_number, print_model):
 
         self.input_count = state_size
         self.output_count = actions_number
-        self.memory = col.deque(maxlen = 10000)
         self.discount_factor = 0.9
         self.epsilon = 1
         self.epsilon_min_val = 0.05
         self.epsilon_decay = 0.995
-        self.learning_rate = 0.001
+        self.learning_rate = 0.01
         self.gamma = 0.95
 
-        self.model = self.define_model()
+        self.model = self.define_model(print_model)
 
 
-    def define_model(self):
+    def define_model(self, print_model):
         # Initialization of tensorflow model
-        # I hava no idea wtf I am doing and I don't how does it work
-        # Tensorflow documentation sucks for me
+        # RandomNormal(mean=0.0, stddev=0.05) sets network to random state (for more efficient learning)
 
         model = tf.keras.Sequential()
-        model.add(tf.keras.layers.Dense(24, input_dim = self.input_count, activation='relu', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=1)))
-        model.add(tf.keras.layers.Dense(48, input_dim = self.input_count, activation='relu', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=1)))
-        model.add(tf.keras.layers.Dense(64, activation = 'relu', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=1)))
-        model.add(tf.keras.layers.Dense(self.output_count, activation = 'linear', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=1)))
+        model.add(tf.keras.layers.Dense(16, input_dim = self.input_count, activation = 'relu', kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
+        model.add(tf.keras.layers.Dense(32, activation ='relu', kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
+        model.add(tf.keras.layers.Dense(64, activation ='relu', kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
+        model.add(tf.keras.layers.Dense(256, activation = 'relu', kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
+        model.add(tf.keras.layers.Dense(self.output_count, activation = 'linear', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05)))
 
         model.compile(loss='Huber', optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate))
 
         # save model as model.png
         # os.environ["PATH"] += os.pathsep + 'C:\Program Files (x86)\Graphviz2.38\bin\'
         # tf.keras.utils.plot_model(model, to_file='model.png', show_shapes = True, expand_nested = True)
-        print(model.summary())
+
+        if (print_model == 1):
+            print(model.summary())
 
         # print available devices
         # print(tf.config.list_physical_devices())
@@ -50,20 +45,17 @@ class DQN:
         return model
 
 
-    def memorize(self, state, action, reward, next_state, done):
-        self.memory.append((state, action, reward, next_state, done))
+    def save_weights(self, filename):
+        self.model.save_weights(filename)
 
 
-    def save_model(self):
-        self.model.save_weights("weights.wgs")
+    def load_weights(self, filename):
+        self.model.load_weights(filename)
 
 
-    def load(self):
-        self.model.load_weights("weights.wgs")
-
-
-    def learn(self):
-        for state, action, reward, next_state, done in self.memory:
+    # learn model from given batch
+    def learn(self, batch):
+        for state, action, reward, next_state, done in batch:
             target = self.model.predict(state)
 
             target[0][action] = reward
@@ -78,7 +70,7 @@ class DQN:
         if self.epsilon > self.epsilon_min_val:
             self.epsilon *= self.epsilon_decay
 
-        self.memory.clear()
+        batch.clear()
 
 
     def make_move(self, state):
