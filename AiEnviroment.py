@@ -11,8 +11,6 @@ from DQN import DQN
 # FUNCTIONS
 def clone_dqn(dqn):
      # create directory
-     if not os.path.exists(foldername):
-        os.makedirs(foldername)
 
      # save weights from dqn
      dqn.save_weights(foldername + filename_copy)
@@ -86,6 +84,9 @@ display_mode = 0
 # weights folder name
 foldername = "weights"
 
+if not os.path.exists(foldername):
+   os.makedirs(foldername)
+
 # weights filename
 filename_dqn = "/dqn"
 
@@ -98,13 +99,13 @@ load_model = 0
 
 # save_model = 0 - don't save learned model after every epoch
 # save_model = 1 - save learned model afetr every epoch (will overwrite previously saved model)
-save_model = 1
+save_model = 0
 
 # Number of epochs
 epochs_number = 1000
 
 # Number of games per epoch
-games_per_epoch = 50
+games_per_epoch = 1
 
 # Number of frames per game (frames_per_game / 60 = seconds in display mode)
 frames_per_game = 1000
@@ -120,7 +121,6 @@ batch_size = frames_per_game / 8
 batch = col.deque(maxlen = 100000)
 
 # Load enviroment
-print("Thread opened to calculate games!")
 env_for_size = GameController(display_mode)
 
 # Initalize dqn

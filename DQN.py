@@ -23,6 +23,14 @@ class DQN:
         # Initialization of tensorflow model
         # RandomNormal(mean=0.0, stddev=0.05) sets network to random state (for more efficient learning)
 
+        config = tf.compat.v1.ConfigProto(gpu_options = 
+                         tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.8)
+        # device_count = {'GPU': 1}
+        )
+        config.gpu_options.allow_growth = True
+        session = tf.compat.v1.Session(config=config)
+        tf.compat.v1.keras.backend.set_session(session)
+
         model = tf.keras.Sequential()
         model.add(tf.keras.layers.Dense(16, input_dim = self.input_count, activation = 'relu', kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
         model.add(tf.keras.layers.Dense(32, activation ='relu', kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))

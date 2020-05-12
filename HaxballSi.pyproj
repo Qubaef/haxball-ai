@@ -22,7 +22,6 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="DQN — kopia.py" />
     <Compile Include="DQN.py" />
     <Compile Include="AiEnviroment.py">
       <SubType>Code</SubType>
