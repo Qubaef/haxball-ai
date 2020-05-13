@@ -12,7 +12,7 @@ class DQN:
         self.discount_factor = 0.9
         self.epsilon = 1
         self.epsilon_min_val = 0.05
-        self.epsilon_decay = 0.995
+        self.epsilon_decay = 0.9
         self.learning_rate = 0.01
         self.gamma = 0.95
 
@@ -32,10 +32,9 @@ class DQN:
         tf.compat.v1.keras.backend.set_session(session)
 
         model = tf.keras.Sequential()
-        model.add(tf.keras.layers.Dense(16, input_dim = self.input_count, activation = 'relu', kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
-        model.add(tf.keras.layers.Dense(32, activation ='relu', kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
+        model.add(tf.keras.layers.Dense(32, input_dim = self.input_count, activation = 'relu', kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
         model.add(tf.keras.layers.Dense(64, activation ='relu', kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
-        model.add(tf.keras.layers.Dense(256, activation = 'relu', kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
+        model.add(tf.keras.layers.Dense(128, activation ='relu', kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
         model.add(tf.keras.layers.Dense(self.output_count, activation = 'linear', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05)))
 
         model.compile(loss='Huber', optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate))

@@ -99,13 +99,13 @@ load_model = 0
 
 # save_model = 0 - don't save learned model after every epoch
 # save_model = 1 - save learned model afetr every epoch (will overwrite previously saved model)
-save_model = 0
+save_model = 1
 
 # Number of epochs
 epochs_number = 1000
 
 # Number of games per epoch
-games_per_epoch = 1
+games_per_epoch = 50
 
 # Number of frames per game (frames_per_game / 60 = seconds in display mode)
 frames_per_game = 1000
