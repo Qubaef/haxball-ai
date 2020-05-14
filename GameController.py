@@ -113,9 +113,9 @@ class GameController( object ):
         #        int(self.ball.v.x / 2), int(self.ball.v.y / 2),
         #        int(self.player1_target_goal / 2)]
 
-        return [int(self.player1.p.x / 2),
-               int(self.player1.v.x / 2),
-               int(self.ball.p.x / 2)]
+        return [self.player1.p.x / self.game.screen_w,
+               (self.player1.v.x - self.player1.v_max) / self.player1.v_max, 
+               self.ball.p.x / self.game.screen_w]
 
 
     def get_state_2(self):
@@ -128,17 +128,15 @@ class GameController( object ):
         #        int(self.ball.v.x / 2), int(self.ball.v.y / 2),
         #        int(self.player2_target_goal / 2)]
 
-        return [int(self.player2.p.x / 2),
-               int(self.player2.v.x / 2), 
-               int(self.ball.p.x / 2)]
+        return [self.player2.p.x / self.game.screen_w,
+               (self.player2.v.x - self.player2.v_max) / self.player2.v_max, 
+               self.ball.p.x / self.game.screen_w]
 
 
     def get_reward(self):
         # get distance between player1 and the ball
-        if self.player1.p.x != self.ball.p.x:
-            reward_player1 = 1 / (abs(self.player1.p.x - self.ball.p.x))
-        else:
-            reward_player1 = 1
+        reward_player1 = -(abs(self.player1.p.x + self.player1.v.x - self.ball.p.x) / self.game.pitch_w)
+
         # reward_player1 = -(self.player1.p - self.ball.p).length() / 4
 
         # get distance between ball and the opponent's goal
@@ -146,10 +144,7 @@ class GameController( object ):
 
 
         # get distance between player2 and the ball
-        if self.player2.p.x != self.ball.p.x:
-            reward_player2 = 1 / (abs(self.player2.p.x - self.ball.p.x))
-        else:
-            reward_player2 = 1
+        reward_player2 = -(abs(self.player2.p.x + self.player2.v.x - self.ball.p.x) / self.game.pitch_w)
 
         # get distance between ball and the opponent's goal
         # reward_player2 += self.game.team_right.goal.get_dist(self.ball.p) / 2

@@ -2,6 +2,7 @@ import numpy as np
 import random
 import tensorflow as tf
 import os
+import matplotlib.pyplot as plt
 
 class DQN:
 
@@ -12,8 +13,8 @@ class DQN:
         self.discount_factor = 0.9
         self.epsilon = 1
         self.epsilon_min_val = 0.05
-        self.epsilon_decay = 0.9
-        self.learning_rate = 0.01
+        self.epsilon_decay = 0.95
+        self.learning_rate = 0.0001
         self.gamma = 0.95
 
         self.model = self.define_model(print_model)
@@ -32,10 +33,10 @@ class DQN:
         tf.compat.v1.keras.backend.set_session(session)
 
         model = tf.keras.Sequential()
-        model.add(tf.keras.layers.Dense(32, input_dim = self.input_count, activation = 'relu', kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
-        model.add(tf.keras.layers.Dense(64, activation ='relu', kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
-        model.add(tf.keras.layers.Dense(128, activation ='relu', kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
-        model.add(tf.keras.layers.Dense(self.output_count, activation = 'linear', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05)))
+        model.add(tf.keras.layers.Dense(16, input_dim = self.input_count, activation = 'tanh'))
+        model.add(tf.keras.layers.Dense(32))
+        # model.add(tf.keras.layers.Dense(64, kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
+        model.add(tf.keras.layers.Dense(self.output_count))
 
         model.compile(loss='Huber', optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate))
 
@@ -78,6 +79,41 @@ class DQN:
             self.epsilon *= self.epsilon_decay
 
         batch.clear()
+
+
+    def print_model(self, accuracy):
+        data = []
+        for i in range(0, accuracy, 1):
+            row = []
+            for j in range(int(-accuracy / 2) , int(accuracy / 2), 1):
+                state = [i / accuracy, j / accuracy,  0.5]
+                state = np.reshape(state,[1, len(state)])
+                row.append(np.argmax(self.model.predict(state)[0]))
+            data.append(row)
+
+        plt.imshow(data, cmap='gray_r', interpolation='nearest')
+        plt.xlabel('Player vector')
+        plt.ylabel('Player pos')
+        plt.colorbar()
+        plt.show(block = True)
+        plt.clf()
+
+    def save_model(self, accuracy, filepath):
+        data = []
+        for i in range(0, accuracy, 1):
+            row = []
+            for j in range(int(-accuracy / 2) , int(accuracy / 2), 1):
+                state = [i / accuracy, j / accuracy,  0.5]
+                state = np.reshape(state,[1, len(state)])
+                row.append(np.argmax(self.model.predict(state)[0]))
+            data.append(row)
+
+        plt.imshow(data, cmap='gray_r', interpolation='nearest')
+        plt.xlabel('Player vector')
+        plt.ylabel('Player pos')
+        plt.colorbar()
+        plt.savefig(filepath + '/' + 'model.png')
+        plt.clf()
 
 
     def make_move(self, state):
