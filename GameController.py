@@ -61,14 +61,20 @@ class GameController( object ):
         # [3] - tuple of 2 numbers (a,b) - used to kick the ball if [2] was 1
 
         # set players moves
-        self.player1.velocity_add(self.states_translation_array[self.possible_inputs[input_player1][0]])
-        self.player2.velocity_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
+        # self.player1.velocity_add(self.states_translation_array[self.possible_inputs[input_player1][0]])
+        # self.player2.velocity_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
+
+        self.player1.position_add(self.states_translation_array[self.possible_inputs[input_player1][0]])
+        self.player2.position_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
 
         # manage inputs(for debug and to avoid "not responding" communicate)
 
         if self.display_mode == 2:
-            self.game.team_left.players[0].p.x = pygame.mouse.get_pos()[0]
-            self.game.team_left.players[0].p.y = pygame.mouse.get_pos()[1]
+            self.ball.p.x = pygame.mouse.get_pos()[0]
+            self.ball.p.y = pygame.mouse.get_pos()[1]
+
+            # self.game.team_left.players[0].p.x = pygame.mouse.get_pos()[0]
+            # self.game.team_left.players[0].p.y = pygame.mouse.get_pos()[1]
             # self.game.team_right.players[0].p.x = pygame.mouse.get_pos()[0]
             # self.game.team_right.players[0].p.y = pygame.mouse.get_pos()[1]
 
@@ -135,7 +141,7 @@ class GameController( object ):
 
     def get_reward(self):
         # get distance between player1 and the ball
-        reward_player1 = -(abs(self.player1.p.x + self.player1.v.x - self.ball.p.x) / self.game.pitch_w)
+        reward_player1 = (self.game.pitch_w - abs(self.player1.p.x + self.player1.v.x - self.ball.p.x)) / self.game.pitch_w
 
         # reward_player1 = -(self.player1.p - self.ball.p).length() / 4
 
@@ -144,7 +150,7 @@ class GameController( object ):
 
 
         # get distance between player2 and the ball
-        reward_player2 = -(abs(self.player2.p.x + self.player2.v.x - self.ball.p.x) / self.game.pitch_w)
+        reward_player2 = (self.game.pitch_w - abs(self.player2.p.x + self.player2.v.x - self.ball.p.x)) / self.game.pitch_w
 
         # get distance between ball and the opponent's goal
         # reward_player2 += self.game.team_right.goal.get_dist(self.ball.p) / 2

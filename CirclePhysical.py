@@ -24,6 +24,10 @@ class CirclePhysical( ABC ):
     def velocity_add(self, velocity):
         self.v += velocity
 
+    def position_add(self, move):
+        # set p vector
+        self.p += move
+
     def update(self):
 
         self.from_sector_remove()

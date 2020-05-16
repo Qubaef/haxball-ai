@@ -47,10 +47,11 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
             action_player2 = dqn.make_move(state_player2)
     
             # simulate frame
-            reward, done = env.next_frame(1, action_player2)
+            reward, done = env.next_frame(action_player1, action_player2)
 
-            reward_story_1.append(reward[0])
-            reward_story_2.append(reward[1])
+            if(display_mode == 3):
+                reward_story_1.append(reward[0])
+                reward_story_2.append(reward[1])
       
             # get players states
             next_state_player1 = env.get_state_1()
@@ -95,7 +96,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 # displayMode = 1 - display game
 # displayMode = 2 - display game; control one player with mouse; LPM displays reward for his current state
 # displayMode = 3 - same as 1, but display plots
-display_mode = 0
+display_mode = 1
 
 # weights folder name
 foldername = "weights"
@@ -111,11 +112,11 @@ filename_copy = "/copy"
 
 # load_model = 0 - initailize new model with random weights
 # load_model = 1 - load model from file
-load_model = 0
+load_model = 1
 
 # save_model = 0 - don't save learned model after every epoch
 # save_model = 1 - save learned model afetr every epoch (will overwrite previously saved model)
-save_model = 1
+save_model = 0
 
 # Number of epochs
 epochs_number = 1000
@@ -131,7 +132,7 @@ threads_number = 1
 
 # TODO?: Random shuffle
 # average batch size (probability of frame being memorized in batch equals batch_size / frames_per_game)
-batch_size = frames_per_game / 1
+batch_size = frames_per_game
 
 # Saved steps
 batch = col.deque(maxlen = 100000)
@@ -146,7 +147,7 @@ dqn_learn = DQN(env_for_size.get_state_length(), env_for_size.get_action_length(
 if(load_model == 1):
     dqn_learn.load_weights(foldername + filename_dqn)
 if(display_mode == 3):
-    dqn_learn.print_model(25)
+    dqn_learn.print_model(15)
 
 env_for_size = None
 
