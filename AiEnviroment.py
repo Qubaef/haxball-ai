@@ -30,6 +30,9 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
     # Load enviroment
     env = GameController(display_mode)
 
+    reward_average_story_1.clear()
+    reward_average_story_2.clear()
+
     for game in range(games_number):
         env.game.game_reset()
         
@@ -37,9 +40,15 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
         state_player1 = env.get_state_1()
         state_player2 = env.get_state_2()
         
-        state_player1 = np.reshape(state_player1,[1, len(state_player1)])
-        state_player2 = np.reshape(state_player2,[1, len(state_player2)])
-        
+        state_player1 = np.reshape(state_player1, [1, len(state_player1)])
+        state_player2 = np.reshape(state_player2, [1, len(state_player2)])
+
+        reward_story_1.clear()
+        reward_story_2.clear()
+
+        average_reward_1 = 0;
+        average_reward_2 = 0;
+
         for frame in range(frames_per_game):
       
             # make actions depending on states
@@ -50,8 +59,11 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
             reward, done = env.next_frame(action_player1, action_player2)
 
             if(display_mode == 3):
+
                 reward_story_1.append(reward[0])
                 reward_story_2.append(reward[1])
+                average_reward_1 += reward[0]/frames_per_game
+                average_reward_2 += reward[1]/frames_per_game
       
             # get players states
             next_state_player1 = env.get_state_1()
@@ -73,13 +85,21 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
             if done:
                 break
 
-        if(display_mode == 3):
+        if display_mode == 3:
             plt.plot(range(frames_per_game), reward_story_1, 'b')
             plt.plot(range(frames_per_game), reward_story_2, 'r')
             plt.show(block = True)
-        
-            reward_story_1.clear()
-            reward_story_2.clear()
+
+
+
+            reward_average_story_1.append(average_reward_1)
+            reward_average_story_2.append(average_reward_2)
+    plt.title("Średnia nagroda na od numeru gry")
+    plt.plot(range(1, games_number + 1), reward_average_story_1, 'b')
+    plt.plot(range(1, games_number + 1), reward_average_story_2, 'r')
+    plt.savefig(foldername + '/' + str(epoch) + '/average_reward.png')
+    plt.show(block=True)
+
 
 
 
@@ -96,7 +116,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 # displayMode = 1 - display game
 # displayMode = 2 - display game; control one player with mouse; LPM displays reward for his current state
 # displayMode = 3 - same as 1, but display plots
-display_mode = 1
+display_mode = 3
 
 # weights folder name
 foldername = "weights"
@@ -112,20 +132,20 @@ filename_copy = "/copy"
 
 # load_model = 0 - initailize new model with random weights
 # load_model = 1 - load model from file
-load_model = 1
+load_model = 0
 
 # save_model = 0 - don't save learned model after every epoch
 # save_model = 1 - save learned model afetr every epoch (will overwrite previously saved model)
-save_model = 0
+save_model = 1
 
 # Number of epochs
-epochs_number = 1000
+epochs_number = 2
 
 # Number of games per epoch
-games_per_epoch = 20
+games_per_epoch = 2
 
 # Number of frames per game (frames_per_game / 60 = seconds in display mode)
-frames_per_game = 1000
+frames_per_game = 50
 
 # Number of threads to procces games
 threads_number = 1
@@ -138,6 +158,8 @@ batch_size = frames_per_game
 batch = col.deque(maxlen = 100000)
 reward_story_1 = col.deque(maxlen = frames_per_game)
 reward_story_2 = col.deque(maxlen = frames_per_game)
+reward_average_story_1 = col.deque(maxlen = games_per_epoch)
+reward_average_story_2 = col.deque(maxlen = games_per_epoch)
 
 # Load enviroment
 env_for_size = GameController(display_mode)
