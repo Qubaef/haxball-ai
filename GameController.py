@@ -37,7 +37,7 @@ class GameController( object ):
         # 3 = v(-1, 0)                # 4 = v( 1, 0)
         # 5 = v(-1, 1) # 6 = v( 0, 1) # 7 = v( 1, 1)
 
-        self.states_translation_array = [None] * 8
+        self.states_translation_array = [None] * 2
         # self.states_translation_array[0] = pygame.math.Vector2(-1, -1).normalize()
         # self.states_translation_array[1] = pygame.math.Vector2(0, -1).normalize()
         # self.states_translation_array[2] = pygame.math.Vector2(1, -1).normalize()
@@ -61,11 +61,11 @@ class GameController( object ):
         # [3] - tuple of 2 numbers (a,b) - used to kick the ball if [2] was 1
 
         # set players moves
-        # self.player1.velocity_add(self.states_translation_array[self.possible_inputs[input_player1][0]])
-        # self.player2.velocity_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
+        self.player1.velocity_add(self.states_translation_array[self.possible_inputs[input_player1][0]])
+        self.player2.velocity_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
 
-        self.player1.position_add(self.states_translation_array[self.possible_inputs[input_player1][0]])
-        self.player2.position_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
+        # self.player1.position_add(self.states_translation_array[self.possible_inputs[input_player1][0]])
+        # self.player2.position_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
 
         # manage inputs(for debug and to avoid "not responding" communicate)
 

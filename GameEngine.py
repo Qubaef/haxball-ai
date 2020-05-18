@@ -1,6 +1,7 @@
 import pygame
 import pygame.gfxdraw
 from math import ceil
+import random
 from CirclePhysical import CirclePhysical
 from Goal import Goal
 from Team import Team
@@ -350,7 +351,9 @@ class GameEngine( object ):
 
     def positions_reset(self):
         for obj in self.balls:
-            obj.set_move((0, 0), (self.screen_w / 2, self.screen_h / 2))
+            # obj.set_move((0, 0), (self.screen_w / 2, self.screen_h / 2))
+            obj.set_move((0, 0), (random.randrange((self.screen_w - self.pitch_w) / 2, self.pitch_w + (self.screen_w - self.pitch_w) / 2),
+                                 random.randrange((self.screen_h - self.pitch_h) / 2, self.pitch_h + (self.screen_h - self.pitch_h) / 2)))
 
 
     def is_done(self):

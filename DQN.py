@@ -14,7 +14,7 @@ class DQN:
         self.epsilon = 0
         self.epsilon_min_val = 0.05
         self.epsilon_decay = 0.9
-        self.learning_rate = 0.00001
+        self.learning_rate = 0.0001
         self.gamma = 0.95
 
         self.model = self.define_model(print_model)
@@ -70,11 +70,11 @@ class DQN:
             target[0][action] = reward
 
             if not done:
-                target[0][action] += self.gamma * np.amax(self.model.predict(next_state)[0])
+                target[0][action] += self.gamma * np.amax(self.model.predict(next_state, batch_size = len(next_state))[0])
 
             # TODO?
             # self.model.fit_generate(state, target, epochs=1, verbose=0)
-            self.model.fit(state, target, epochs=1, verbose=0)
+            self.model.fit(state, target, epochs = 1, verbose = 0)
 
         if self.epsilon > self.epsilon_min_val:
             self.epsilon *= self.epsilon_decay
@@ -89,7 +89,7 @@ class DQN:
             for j in range(int(-accuracy / 2) , int(accuracy / 2), 1):
                 state = [i / accuracy, j / accuracy,  0.5]
                 state = np.reshape(state,[1, len(state)])
-                row.append(np.argmax(self.model.predict(state)[0]))
+                row.append(np.argmax(self.model.predict(state, batch_size = len(state))[0]))
             data.append(row)
 
         plt.imshow(data, cmap='gray_r', interpolation='nearest')
@@ -98,6 +98,7 @@ class DQN:
         plt.colorbar()
         plt.show(block = True)
         plt.clf()
+
 
     def save_model(self, accuracy, filepath):
         data = []
