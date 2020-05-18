@@ -35,6 +35,7 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
     reward_average_story_2.clear()
 
     for game in range(games_number):
+        # Reset enviroment
         env.game.game_reset()
         
         # Get players states
@@ -48,8 +49,12 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
         reward_story_1.clear()
         reward_story_2.clear()
 
+        # Clear average reward
         average_reward_1 = 0;
         average_reward_2 = 0;
+
+        # Reset sequence
+        sequence_current = 0
 
         for frame in range(frames_per_game):
       
@@ -75,10 +80,14 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
             next_state_player1 = np.reshape(next_state_player1,[1, len(next_state_player1)])
             next_state_player2 = np.reshape(next_state_player2,[1, len(next_state_player2)])
     
-            # memorize frames
-            if random.random() < (batch_size / frames_per_game):
+            # draw whether or not to remember the sequence of frames
+            if random.random() < (batch_size / frames_per_game) and sequence_current == 0:
+                sequence_current = sequence_max
+
+            # memorize sequence
+            if sequence_current > 0:
+                sequence_current -= 1
                 batch.append((state_player1, action_player1, reward[0], next_state_player1, done))
-            if random.random() < (batch_size / frames_per_game):
                 batch.append((state_player2, action_player2, reward[1], next_state_player2, done))
     
             # overwrite state of the players
@@ -119,7 +128,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 # displayMode = 1 - display game
 # displayMode = 2 - display game; control one player with mouse; LPM displays reward for his current state
 # displayMode = 3 - same as 1, but display plots
-display_mode = 2
+display_mode = 0
 
 # weights folder name
 foldername = "weights"
@@ -135,17 +144,17 @@ filename_copy = "/copy"
 
 # load_model = 0 - initailize new model with random weights
 # load_model = 1 - load model from file
-load_model = 1
+load_model = 0
 
 # save_model = 0 - don't save learned model after every epoch
 # save_model = 1 - save learned model afetr every epoch (will overwrite previously saved model)
-save_model = 0
+save_model = 1
 
 # Number of epochs
 epochs_number = 1000
 
 # Number of games per epoch
-games_per_epoch = 20
+games_per_epoch = 30
 
 # Number of frames per game (frames_per_game / 60 = seconds in display mode)
 frames_per_game = 1000
@@ -153,9 +162,12 @@ frames_per_game = 1000
 # Number of threads to procces games
 threads_number = 1
 
-# TODO?: Random shuffle
 # average batch size (probability of frame being memorized in batch equals batch_size / frames_per_game)
-batch_size = frames_per_game
+batch_size = frames_per_game / 8
+
+# batch sequence size
+sequence_max = 7
+sequence_current = 0
 
 # Saved steps
 batch = col.deque(maxlen = 100000)
