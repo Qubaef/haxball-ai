@@ -10,7 +10,6 @@ class DQN:
 
         self.input_count = state_size
         self.output_count = actions_number
-        self.discount_factor = 0.9
         self.epsilon = 0
         self.epsilon_min_val = 0.05
         self.epsilon_decay = 0.9
@@ -116,6 +115,16 @@ class DQN:
         plt.colorbar()
         plt.savefig(filepath + '/' + 'model.png')
         plt.clf()
+
+        file = open(filepath + '/' + 'parameters.txt', 'w')
+        print('Epsilon:\t\t', self.epsilon,
+              '\nEpsilon decay:\t\t', self.epsilon_decay,
+              '\nLearning rate:\t\t', self.learning_rate,
+              '\nGamma:\t\t\t', self.gamma,
+              '\n\n\nInput size:\t\t', self.input_count,
+              '\nOutput size:\t\t', self.output_count,
+              file=file)
+        file.close()
 
 
     def make_move(self, state):
