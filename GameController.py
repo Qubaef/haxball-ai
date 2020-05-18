@@ -119,9 +119,9 @@ class GameController( object ):
         #        int(self.ball.v.x / 2), int(self.ball.v.y / 2),
         #        int(self.player1_target_goal / 2)]
 
-        return [self.player1.p.x / self.game.screen_w,
+        return np.array([self.player1.p.x / self.game.screen_w,
                (self.player1.v.x - self.player1.v_max) / self.player1.v_max, 
-               self.ball.p.x / self.game.screen_w]
+               self.ball.p.x / self.game.screen_w])
 
 
     def get_state_2(self):
@@ -134,9 +134,9 @@ class GameController( object ):
         #        int(self.ball.v.x / 2), int(self.ball.v.y / 2),
         #        int(self.player2_target_goal / 2)]
 
-        return [self.player2.p.x / self.game.screen_w,
+        return np.array([self.player2.p.x / self.game.screen_w,
                (self.player2.v.x - self.player2.v_max) / self.player2.v_max, 
-               self.ball.p.x / self.game.screen_w]
+               self.ball.p.x / self.game.screen_w])
 
 
     def get_reward(self):

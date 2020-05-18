@@ -2,6 +2,7 @@ import numpy as np
 import random
 import time
 import _collections as col
+import tensorflow as tf
 import copy
 import os
 from threading import Thread
@@ -41,8 +42,8 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
         state_player1 = env.get_state_1()
         state_player2 = env.get_state_2()
         
-        state_player1 = np.reshape(state_player1, [1, len(state_player1)])
-        state_player2 = np.reshape(state_player2, [1, len(state_player2)])
+        #state_player1 = np.reshape(state_player1, [1, len(state_player1)])
+        #state_player2 = np.reshape(state_player2, [1, len(state_player2)])
 
         # Clear rewards story
         reward_story_1.clear()
@@ -54,8 +55,8 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
         for frame in range(frames_per_game):
       
             # make actions depending on states
-            action_player1 = dqn.make_move(state_player1)
-            action_player2 = dqn.make_move(state_player2)
+            action_player1 = dqn.make_move(np.reshape(state_player1, [1, len(state_player1)]))
+            action_player2 = dqn.make_move(np.reshape(state_player2, [1, len(state_player2)]))
     
             # simulate frame
             reward, done = env.next_frame(action_player1, action_player2)
@@ -72,14 +73,14 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
             next_state_player1 = env.get_state_1()
             next_state_player2 = env.get_state_2()
     
-            next_state_player1 = np.reshape(next_state_player1,[1, len(next_state_player1)])
-            next_state_player2 = np.reshape(next_state_player2,[1, len(next_state_player2)])
+            #next_state_player1 = np.reshape(next_state_player1,[1, len(next_state_player1)])
+            #next_state_player2 = np.reshape(next_state_player2,[1, len(next_state_player2)])
     
             # memorize frames
             if random.random() < (batch_size / frames_per_game):
-                batch.append((state_player1, action_player1, reward[0], next_state_player1, done))
+                dqn.memory.remember(state_player1, action_player1, reward[0], next_state_player1, done)
             if random.random() < (batch_size / frames_per_game):
-                batch.append((state_player2, action_player2, reward[1], next_state_player2, done))
+                dqn.memory.remember(state_player1, action_player1, reward[0], next_state_player1, done)
     
             # overwrite state of the players
             state_player1 = next_state_player1
@@ -113,13 +114,16 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
+# probably speeds up prediction
+tf.compat.v1.disable_eager_execution()
+
 # Constants
 
 # displayMode = 0 - no display, only console window
 # displayMode = 1 - display game
 # displayMode = 2 - display game; control one player with mouse; LPM displays reward for his current state
 # displayMode = 3 - same as 1, but display plots
-display_mode = 2
+display_mode = 0
 
 # weights folder name
 foldername = "weights"
@@ -135,17 +139,17 @@ filename_copy = "/copy"
 
 # load_model = 0 - initailize new model with random weights
 # load_model = 1 - load model from file
-load_model = 1
+load_model = 0
 
 # save_model = 0 - don't save learned model after every epoch
 # save_model = 1 - save learned model afetr every epoch (will overwrite previously saved model)
-save_model = 0
+save_model = 1
 
 # Number of epochs
 epochs_number = 1000
 
 # Number of games per epoch
-games_per_epoch = 20
+games_per_epoch = 100
 
 # Number of frames per game (frames_per_game / 60 = seconds in display mode)
 frames_per_game = 1000
@@ -168,7 +172,7 @@ reward_average_story_2 = col.deque(maxlen = games_per_epoch)
 env_for_size = GameController(display_mode)
 
 # Initalize dqn
-dqn_learn = DQN(env_for_size.get_state_length(), env_for_size.get_action_length(), 1)
+dqn_learn = DQN(env_for_size.get_state_length(), env_for_size.get_action_length(), batch_size, 1)
 if(load_model == 1):
     dqn_learn.load_weights(foldername + filename_dqn)
 if(display_mode == 3):
@@ -211,7 +215,7 @@ for epoch in range(epochs_number):
     # Learn from data gathered in batch
     start_time = time.time()
 
-    dqn_learn.learn(batch)
+    dqn_learn.learn()
 
     # Save weights
     if(save_model == 1):
