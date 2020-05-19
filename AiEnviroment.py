@@ -74,7 +74,7 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
             #if random.random() < (batch_size / frames_per_game):
             dqn.memory.remember(state_player1, action_player1, reward[0], next_state_player1, done)
             #if random.random() < (batch_size / frames_per_game):
-            dqn.memory.remember(state_player1, action_player1, reward[0], next_state_player1, done)
+            dqn.memory.remember(state_player2, action_player2, reward[1], next_state_player2, done)
     
             # overwrite state of the players
             state_player1 = next_state_player1
@@ -108,11 +108,14 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
 
 
 # START
+tf.compat.v1.disable_eager_execution()
 
 # Set to gpu
 # If you dont have nvidia gpu, comment lines below
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
+
 
 # Constants
 
@@ -120,7 +123,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 # displayMode = 1 - display game
 # displayMode = 2 - display game; control one player with mouse; LPM displays reward for his current state
 # displayMode = 3 - same as 1, but display plots
-display_mode = 1
+display_mode = 0
 
 # weights folder name
 foldername = "weights"

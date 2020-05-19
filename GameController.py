@@ -61,11 +61,11 @@ class GameController( object ):
         # [3] - tuple of 2 numbers (a,b) - used to kick the ball if [2] was 1
 
         # set players moves
-        # self.player1.velocity_add(self.states_translation_array[self.possible_inputs[input_player1][0]])
-        # self.player2.velocity_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
+        self.player1.velocity_add(self.states_translation_array[self.possible_inputs[input_player1][0]])
+        self.player2.velocity_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
 
-        self.player1.position_add(self.states_translation_array[self.possible_inputs[input_player1][0]])
-        self.player2.position_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
+        #self.player1.position_add(self.states_translation_array[self.possible_inputs[input_player1][0]])
+        #self.player2.position_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
 
         # manage inputs(for debug and to avoid "not responding" communicate)
 
