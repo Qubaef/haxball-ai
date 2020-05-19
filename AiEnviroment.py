@@ -41,9 +41,6 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
         # Get players states
         state_player1 = env.get_state_1()
         state_player2 = env.get_state_2()
-        
-        #state_player1 = np.reshape(state_player1, [1, len(state_player1)])
-        #state_player2 = np.reshape(state_player2, [1, len(state_player2)])
 
         # Clear rewards story
         reward_story_1.clear()
@@ -72,9 +69,6 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
             # get players states
             next_state_player1 = env.get_state_1()
             next_state_player2 = env.get_state_2()
-    
-            #next_state_player1 = np.reshape(next_state_player1,[1, len(next_state_player1)])
-            #next_state_player2 = np.reshape(next_state_player2,[1, len(next_state_player2)])
     
             # memorize frames
             if random.random() < (batch_size / frames_per_game):
@@ -114,16 +108,13 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-# probably speeds up prediction
-tf.compat.v1.disable_eager_execution()
-
 # Constants
 
 # displayMode = 0 - no display, only console window
 # displayMode = 1 - display game
 # displayMode = 2 - display game; control one player with mouse; LPM displays reward for his current state
 # displayMode = 3 - same as 1, but display plots
-display_mode = 0
+display_mode = 1
 
 # weights folder name
 foldername = "weights"
@@ -149,7 +140,7 @@ save_model = 1
 epochs_number = 1000
 
 # Number of games per epoch
-games_per_epoch = 100
+games_per_epoch = 50
 
 # Number of frames per game (frames_per_game / 60 = seconds in display mode)
 frames_per_game = 1000
@@ -172,7 +163,7 @@ reward_average_story_2 = col.deque(maxlen = games_per_epoch)
 env_for_size = GameController(display_mode)
 
 # Initalize dqn
-dqn_learn = DQN(env_for_size.get_state_length(), env_for_size.get_action_length(), batch_size, 1)
+dqn_learn = DQN(env_for_size.get_state_length(), env_for_size.get_action_length(), batch_size * games_per_epoch, 1)
 if(load_model == 1):
     dqn_learn.load_weights(foldername + filename_dqn)
 if(display_mode == 3):

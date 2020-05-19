@@ -14,8 +14,8 @@ class DQN:
         self.output_count = actions_number
         self.epsilon = 1
         self.epsilon_min_val = 0.05
-        self.epsilon_decay = 0.99
-        self.learning_rate = 0.0001
+        self.epsilon_decay = 0.9
+        self.learning_rate = 0.00001
         self.gamma = 0.95
         self.batch_size = batch_size
         self.memory = Memory(max_size=1000000, input_dims=state_size)
@@ -34,6 +34,9 @@ class DQN:
         session = tf.compat.v1.Session(config=config)
         tf.compat.v1.keras.backend.set_session(session)
 
+        # probably speeds up prediction
+        tf.compat.v1.disable_eager_execution()
+
         model = tf.keras.Sequential()
         # model.add(tf.keras.layers.LeakyReLU(input_shape = (self.input_count,)))
         model.add(tf.keras.layers.Dense(16, input_dim=self.input_count, activation="tanh"))
@@ -41,7 +44,7 @@ class DQN:
         # model.add(tf.keras.layers.Dense(64, kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
         model.add(tf.keras.layers.Dense(self.output_count))
 
-        model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate))
+        model.compile(loss=tf.keras.losses.Huber(), optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate))
 
         # save model as model.png
         # os.environ["PATH"] += os.pathsep + 'C:\Program Files (x86)\Graphviz2.38\bin\'
@@ -61,6 +64,7 @@ class DQN:
     def load_weights(self, filename):
         self.model.load_weights(filename)
 
+
     # learn model from given batch
     def learn(self):
         if not self.memory.mem_count < self.batch_size:
@@ -74,10 +78,11 @@ class DQN:
 
             q_target[batch_index, actions] = rewards + self.gamma * np.max(q_next, axis=1)
 
-            self.model.train_on_batch(states, q_target)
+            self.model.fit(states, q_target)
 
             if self.epsilon > self.epsilon_min_val:
                 self.epsilon *= self.epsilon_decay
+
 
     def print_model(self, accuracy):
         data = []
@@ -95,6 +100,7 @@ class DQN:
         plt.colorbar()
         plt.show(block=True)
         plt.clf()
+
 
     def save_model(self, accuracy, filepath):
         data = []
