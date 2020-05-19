@@ -77,15 +77,17 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
             #next_state_player2 = np.reshape(next_state_player2,[1, len(next_state_player2)])
     
             # memorize frames
-            if random.random() < (batch_size / frames_per_game):
-                dqn.memory.remember(state_player1, action_player1, reward[0], next_state_player1, done)
-            if random.random() < (batch_size / frames_per_game):
-                dqn.memory.remember(state_player1, action_player1, reward[0], next_state_player1, done)
+            #if random.random() < (batch_size / frames_per_game):
+            dqn.memory.remember(state_player1, action_player1, reward[0], next_state_player1, done)
+            #if random.random() < (batch_size / frames_per_game):
+            dqn.memory.remember(state_player1, action_player1, reward[0], next_state_player1, done)
     
             # overwrite state of the players
             state_player1 = next_state_player1
             state_player2 = next_state_player2
-    
+
+            dqn_learn.learn()
+
             if done:
                 break
 
@@ -98,6 +100,10 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
         if(save_model == 1):
             reward_average_story_1.append(average_reward_1)
             reward_average_story_2.append(average_reward_2)
+
+
+
+
 
     if(save_model == 1):
         plt.title("Średnia nagroda na od numeru gry")
@@ -149,17 +155,17 @@ save_model = 1
 epochs_number = 1000
 
 # Number of games per epoch
-games_per_epoch = 100
+games_per_epoch = 20
 
 # Number of frames per game (frames_per_game / 60 = seconds in display mode)
-frames_per_game = 1000
+frames_per_game = 200
 
 # Number of threads to procces games
 threads_number = 1
 
 # TODO?: Random shuffle
 # average batch size (probability of frame being memorized in batch equals batch_size / frames_per_game)
-batch_size = frames_per_game
+batch_size = 100
 
 # Saved steps
 batch = col.deque(maxlen = 100000)
@@ -176,11 +182,9 @@ dqn_learn = DQN(env_for_size.get_state_length(), env_for_size.get_action_length(
 if(load_model == 1):
     dqn_learn.load_weights(foldername + filename_dqn)
 if(display_mode == 3):
-    dqn_learn.print_model(15)
+    dqn_learn.print_model(45)
 
 env_for_size = None
-
-
 
 for epoch in range(epochs_number):
 
@@ -192,7 +196,7 @@ for epoch in range(epochs_number):
     if not os.path.exists(foldername + '/' + str(epoch)):
         os.makedirs(foldername + '/' + str(epoch))
     if save_model == 1:
-        dqn_learn.save_model(10, foldername + '/' + str(epoch))
+        dqn_learn.save_model(25, foldername + '/' + str(epoch))
 
     # Play games and save batch
     start_time = time.time()
@@ -215,7 +219,7 @@ for epoch in range(epochs_number):
     # Learn from data gathered in batch
     start_time = time.time()
 
-    dqn_learn.learn()
+    #dqn_learn.learn()
 
     # Save weights
     if(save_model == 1):
