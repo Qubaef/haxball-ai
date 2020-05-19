@@ -46,8 +46,8 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
         reward_story_1.clear()
         reward_story_2.clear()
 
-        average_reward_1 = 0;
-        average_reward_2 = 0;
+        average_reward_1 = 0
+        average_reward_2 = 0
 
         for frame in range(frames_per_game):
       
@@ -63,8 +63,8 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
                 reward_story_2.append(reward[1])
 
             if(save_model == 1):
-                average_reward_1 += reward[0]/frames_per_game
-                average_reward_2 += reward[1]/frames_per_game
+                average_reward_1 += reward[0] / frames_per_game
+                average_reward_2 += reward[1] / frames_per_game
       
             # get players states
             next_state_player1 = env.get_state_1()
@@ -74,30 +74,27 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
             #if random.random() < (batch_size / frames_per_game):
             dqn.memory.remember(state_player1, action_player1, reward[0], next_state_player1, done)
             #if random.random() < (batch_size / frames_per_game):
-            dqn.memory.remember(state_player1, action_player1, reward[0], next_state_player1, done)
+            dqn.memory.remember(state_player1, action_player2, reward[1], next_state_player2, done)
     
             # overwrite state of the players
             state_player1 = next_state_player1
             state_player2 = next_state_player2
 
-            dqn_learn.learn()
+            # dqn_learn.learn()
 
             if done:
                 break
 
         if display_mode == 3:
-            plt.plot(range(frames_per_game), reward_story_1, 'b')
-            plt.plot(range(frames_per_game), reward_story_2, 'r')
-            plt.show(block = True)
+            fig = plt.figure(figsize=(16, 12))
+            fig.plot(range(frames_per_game), reward_story_1, 'b')
+            fig.plot(range(frames_per_game), reward_story_2, 'r')
+            fig.show(block = True)
 
         # save average reward for this game
         if(save_model == 1):
             reward_average_story_1.append(average_reward_1)
             reward_average_story_2.append(average_reward_2)
-
-
-
-
 
     if(save_model == 1):
         plt.title("Średnia nagroda na od numeru gry")
@@ -127,6 +124,9 @@ foldername = "weights"
 
 if not os.path.exists(foldername):
    os.makedirs(foldername)
+if not os.path.exists(foldername + '/plots/'):
+   os.makedirs(foldername + '/plots/')
+   
 
 # weights filename
 filename_dqn = "/dqn"
@@ -136,11 +136,11 @@ filename_copy = "/copy"
 
 # load_model = 0 - initailize new model with random weights
 # load_model = 1 - load model from file
-load_model = 0
+load_model = 1
 
 # save_model = 0 - don't save learned model after every epoch
 # save_model = 1 - save learned model afetr every epoch (will overwrite previously saved model)
-save_model = 1
+save_model = 0
 
 # Number of epochs
 epochs_number = 1000
@@ -149,14 +149,14 @@ epochs_number = 1000
 games_per_epoch = 20
 
 # Number of frames per game (frames_per_game / 60 = seconds in display mode)
-frames_per_game = 200
+frames_per_game = 1000
 
 # Number of threads to procces games
 threads_number = 1
 
 # TODO?: Random shuffle
 # average batch size (probability of frame being memorized in batch equals batch_size / frames_per_game)
-batch_size = 100
+batch_size = int(100)
 
 # Saved steps
 batch = col.deque(maxlen = 100000)

@@ -14,7 +14,7 @@ class DQN:
 
         self.input_count = state_size
         self.output_count = actions_number
-        self.epsilon = 1
+        self.epsilon = 0
         self.epsilon_min_val = 0.05
         self.epsilon_decay = 1e-5
         self.learning_rate = 0.001
@@ -35,6 +35,9 @@ class DQN:
         config.gpu_options.allow_growth = True
         session = tf.compat.v1.Session(config=config)
         tf.compat.v1.keras.backend.set_session(session)
+
+        # probably speeds up prediction
+        tf.compat.v1.disable_eager_execution()
 
         model = tf.keras.Sequential()
         # model.add(tf.keras.layers.LeakyReLU(input_shape = (self.input_count,)))
