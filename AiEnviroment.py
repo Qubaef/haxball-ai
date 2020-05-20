@@ -2,6 +2,7 @@ import numpy as np
 import random
 import time
 import _collections as col
+import tensorflow as tf
 import copy
 import os
 from threading import Thread
@@ -41,9 +42,6 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
         # Get players states
         state_player1 = env.get_state_1()
         state_player2 = env.get_state_2()
-        
-        state_player1 = np.reshape(state_player1, [1, len(state_player1)])
-        state_player2 = np.reshape(state_player2, [1, len(state_player2)])
 
         # Clear rewards story
         reward_story_1.clear()
@@ -53,14 +51,11 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
         average_reward_1 = 0;
         average_reward_2 = 0;
 
-        # Reset sequence
-        sequence_current = 0
-
         for frame in range(frames_per_game):
       
             # make actions depending on states
-            action_player1 = dqn.make_move(state_player1)
-            action_player2 = dqn.make_move(state_player2)
+            action_player1 = dqn.make_move(np.reshape(state_player1, [1, len(state_player1)]))
+            action_player2 = dqn.make_move(np.reshape(state_player2, [1, len(state_player2)]))
     
             # simulate frame
             reward, done = env.next_frame(action_player1, action_player2)
@@ -70,30 +65,25 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
                 reward_story_2.append(reward[1])
 
             if(save_model == 1):
-                average_reward_1 += reward[0]/frames_per_game
-                average_reward_2 += reward[1]/frames_per_game
+                average_reward_1 += reward[0] / frames_per_game
+                average_reward_2 += reward[1] / frames_per_game
       
             # get players states
             next_state_player1 = env.get_state_1()
             next_state_player2 = env.get_state_2()
     
-            next_state_player1 = np.reshape(next_state_player1,[1, len(next_state_player1)])
-            next_state_player2 = np.reshape(next_state_player2,[1, len(next_state_player2)])
-    
-            # draw whether or not to remember the sequence of frames
-            if random.random() < (batch_size / frames_per_game) and sequence_current == 0:
-                sequence_current = sequence_max
-
-            # memorize sequence
-            if sequence_current > 0:
-                sequence_current -= 1
-                batch.append((state_player1, action_player1, reward[0], next_state_player1, done))
-                batch.append((state_player2, action_player2, reward[1], next_state_player2, done))
+            # memorize frames
+            #if random.random() < (batch_size / frames_per_game):
+            dqn.memory.remember(state_player1, action_player1, reward[0], next_state_player1, done)
+            #if random.random() < (batch_size / frames_per_game):
+            dqn.memory.remember(state_player2, action_player2, reward[1], next_state_player2, done)
     
             # overwrite state of the players
             state_player1 = next_state_player1
             state_player2 = next_state_player2
-    
+
+            dqn_learn.learn()
+
             if done:
                 break
 
@@ -115,12 +105,12 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
         plt.clf()
 
 
-# START
 
 # Set to gpu
 # If you dont have nvidia gpu, comment lines below
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 
 # Constants
 
@@ -135,6 +125,9 @@ foldername = "weights"
 
 if not os.path.exists(foldername):
    os.makedirs(foldername)
+if not os.path.exists(foldername + '/plots/'):
+   os.makedirs(foldername + '/plots/')
+   
 
 # weights filename
 filename_dqn = "/dqn"
@@ -157,20 +150,16 @@ epochs_number = 1000
 games_per_epoch = 30
 
 # Number of frames per game (frames_per_game / 60 = seconds in display mode)
-frames_per_game = 1000
+frames_per_game = 300
 
 # Number of threads to procces games
 threads_number = 1
 
 # average batch size (probability of frame being memorized in batch equals batch_size / frames_per_game)
-batch_size = frames_per_game / 8
-
-# batch sequence size
-sequence_max = 7
-sequence_current = 0
+batch_size = int(100)
 
 # Saved steps
-batch = col.deque(maxlen = 100000)
+# batch = col.deque(maxlen = 100000)
 reward_story_1 = col.deque(maxlen = frames_per_game)
 reward_story_2 = col.deque(maxlen = frames_per_game)
 reward_average_story_1 = col.deque(maxlen = games_per_epoch)
@@ -180,15 +169,13 @@ reward_average_story_2 = col.deque(maxlen = games_per_epoch)
 env_for_size = GameController(display_mode)
 
 # Initalize dqn
-dqn_learn = DQN(env_for_size.get_state_length(), env_for_size.get_action_length(), 1)
+dqn_learn = DQN(env_for_size.get_state_length(), env_for_size.get_action_length(), batch_size, 1)
 if(load_model == 1):
     dqn_learn.load_weights(foldername + filename_dqn)
 if(display_mode == 3):
-    dqn_learn.print_model(15)
+    dqn_learn.print_model(45)
 
 env_for_size = None
-
-
 
 for epoch in range(epochs_number):
 
@@ -199,8 +186,8 @@ for epoch in range(epochs_number):
 
     if not os.path.exists(foldername + '/' + str(epoch)):
         os.makedirs(foldername + '/' + str(epoch))
-    if save_model == 1:
-        dqn_learn.save_model(10, foldername + '/' + str(epoch))
+    # if save_model == 1:
+    #     dqn_learn.save_model(25, foldername + '/' + str(epoch))
 
     # Play games and save batch
     start_time = time.time()
@@ -222,8 +209,6 @@ for epoch in range(epochs_number):
 
     # Learn from data gathered in batch
     start_time = time.time()
-
-    dqn_learn.learn(batch)
 
     # Save weights
     if(save_model == 1):
