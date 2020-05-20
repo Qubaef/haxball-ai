@@ -103,14 +103,11 @@ def play_games(games_number, frames_per_game, display_mode, dqn):
         plt.clf()
 
 
-# START
-tf.compat.v1.disable_eager_execution()
 
 # Set to gpu
 # If you dont have nvidia gpu, comment lines below
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
 
 
 # Constants
@@ -138,30 +135,29 @@ filename_copy = "/copy"
 
 # load_model = 0 - initailize new model with random weights
 # load_model = 1 - load model from file
-load_model = 1
+load_model = 0
 
 # save_model = 0 - don't save learned model after every epoch
 # save_model = 1 - save learned model afetr every epoch (will overwrite previously saved model)
-save_model = 0
+save_model = 1
 
 # Number of epochs
 epochs_number = 1000
 
 # Number of games per epoch
-games_per_epoch = 20
+games_per_epoch = 30
 
 # Number of frames per game (frames_per_game / 60 = seconds in display mode)
-frames_per_game = 1000
+frames_per_game = 300
 
 # Number of threads to procces games
 threads_number = 1
 
-# TODO?: Random shuffle
 # average batch size (probability of frame being memorized in batch equals batch_size / frames_per_game)
 batch_size = int(100)
 
 # Saved steps
-batch = col.deque(maxlen = 100000)
+# batch = col.deque(maxlen = 100000)
 reward_story_1 = col.deque(maxlen = frames_per_game)
 reward_story_2 = col.deque(maxlen = frames_per_game)
 reward_average_story_1 = col.deque(maxlen = games_per_epoch)
@@ -188,8 +184,8 @@ for epoch in range(epochs_number):
 
     if not os.path.exists(foldername + '/' + str(epoch)):
         os.makedirs(foldername + '/' + str(epoch))
-    if save_model == 1:
-        dqn_learn.save_model(25, foldername + '/' + str(epoch))
+    # if save_model == 1:
+    #     dqn_learn.save_model(25, foldername + '/' + str(epoch))
 
     # Play games and save batch
     start_time = time.time()
@@ -211,8 +207,6 @@ for epoch in range(epochs_number):
 
     # Learn from data gathered in batch
     start_time = time.time()
-
-    #dqn_learn.learn()
 
     # Save weights
     if(save_model == 1):

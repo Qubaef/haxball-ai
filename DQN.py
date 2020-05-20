@@ -14,7 +14,7 @@ class DQN:
 
         self.input_count = state_size
         self.output_count = actions_number
-        self.epsilon = 0
+        self.epsilon = 1
         self.epsilon_min_val = 0.05
         self.epsilon_decay = 1e-5
         self.learning_rate = 0.001
@@ -41,8 +41,8 @@ class DQN:
 
         model = tf.keras.Sequential()
         # model.add(tf.keras.layers.LeakyReLU(input_shape = (self.input_count,)))
-        model.add(tf.keras.layers.Dense(16, input_dim=self.input_count, activation="tanh"))
-        model.add(tf.keras.layers.Dense(32, activation="relu"))
+        model.add(tf.keras.layers.Dense(32, input_dim = self.input_count, activation="tanh"))
+        model.add(tf.keras.layers.Dense(64, activation="relu"))
         # model.add(tf.keras.layers.Dense(64, kernel_initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05) ))
         model.add(tf.keras.layers.Dense(self.output_count))
 
