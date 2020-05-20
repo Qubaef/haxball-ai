@@ -56,7 +56,7 @@ class GameEngine( object ):
             self.screen = pygame.display.set_mode((self.screen_w, self.screen_h))
             self.fps_clock = pygame.time.Clock()
 
-        self.done = False
+        self.done = 0
 
         self.balls = []      # list containing balls
         self.players = []    # list containing players
@@ -200,6 +200,7 @@ class GameEngine( object ):
         self.team_left.reset_positions()
         self.team_right.reset_positions()
 
+
     def new_ball(self, ball):
         self.balls.append(ball)
 
@@ -306,19 +307,15 @@ class GameEngine( object ):
     def goal_scored(self, goal):
         if goal == self.goal_left:
             self.team_right.add_point()
+            self.done = 1
         else:
             self.team_left.add_point()
+            self.done = -1
 
         # for AI purpose, after goalscore game goes right to the state = 1
         # self.play_mode = -2
         self.play_mode = 1
-
-        self.done = True
-
-    def restart(self):
-        self.play_mode = -2
-        self.done = True
-
+    
 
     # quit python game
     def quit(self):
@@ -367,3 +364,4 @@ class GameEngine( object ):
         self.play_mode = 0
         self.team_left.score = 0
         self.team_right.score = 0
+        self.done = 0

@@ -33,37 +33,62 @@ class GameController( object ):
 
 
         # movement options
-        # 0 = v(-1,-1) # 1 = v( 0,-1) # 2 = v( 1, -1)
-        # 3 = v(-1, 0)                # 4 = v( 1, 0)
-        # 5 = v(-1, 1) # 6 = v( 0, 1) # 7 = v( 1, 1)
+        # 1 = v(-1,-1) # 2 = v( 0,-1) # 3 = v( 1, -1)
+        # 4 = v(-1, 0)                # 5 = v( 1, 0)
+        # 6 = v(-1, 1) # 7 = v( 0, 1) # 8 = v( 1, 1)
 
         self.states_translation_array = [None] * 9
-        self.states_translation_array[0] = pygame.math.Vector2(-1, -1).normalize()
-        self.states_translation_array[1] = pygame.math.Vector2(0, -1).normalize()
-        self.states_translation_array[2] = pygame.math.Vector2(1, -1).normalize()
-        self.states_translation_array[3] = pygame.math.Vector2(-1, 0).normalize()
-        self.states_translation_array[4] = pygame.math.Vector2(0, 0)
+        self.states_translation_array[0] = pygame.math.Vector2(0, 0)
+        self.states_translation_array[1] = pygame.math.Vector2(-1, -1).normalize()
+        self.states_translation_array[2] = pygame.math.Vector2(0, -1).normalize()
+        self.states_translation_array[3] = pygame.math.Vector2(1, -1).normalize()
+        self.states_translation_array[4] = pygame.math.Vector2(-1, 0).normalize()
         self.states_translation_array[5] = pygame.math.Vector2(1, 0).normalize()
         self.states_translation_array[6] = pygame.math.Vector2(-1, 1).normalize()
         self.states_translation_array[7] = pygame.math.Vector2(0, 1).normalize()
         self.states_translation_array[8] = pygame.math.Vector2(1, 1).normalize()
 
-        self.possible_inputs = list(itertools.product(range(9)))
+        self.possible_inputs = list(itertools.product(range(9), range(2), range(7)))
+        self.not_possible_inputs = list(itertools.product([0], range(2), range(1,7)))
+        self.possible_inputs = [item for item in self.possible_inputs if item not in self.not_possible_inputs]
+        
 
     def next_frame(self, input_player1, input_player2):
 
         # Player's input is formated as follows:
-        # [0] - number from range <0,7> - used to determine direction of player's movement
-        # [1] - integer - used to determine if player is in ball controll mode (0 - normal mode, 1 - ball control mode)
-        # [2] - integer - used to determine if player attempts to kick the ball (0 - no attempt, !0 - attempt)
-        # [3] - tuple of 2 numbers (a,b) - used to kick the ball if [2] was 1
+        # [0] - number from range <0,8> - used to determine direction of player's movement and player kick (if [2] == 1)
+        # [1] - bool - used to determine if player is in ball controll mode (0 - normal mode, 1 - ball control mode)
+        # [2] - number from range <0,5> - used to determine strength of ball kick
 
         # set players moves
         self.player1.velocity_add(self.states_translation_array[self.possible_inputs[input_player1][0]])
         self.player2.velocity_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
 
-        #self.player1.position_add(self.states_translation_array[self.possible_inputs[input_player1][0]])
-        #self.player2.position_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
+        # set ball control
+        if self.possible_inputs[input_player2][1] == 0:
+            self.player1.mode_normal()
+        else:
+            self.player1.mode_ball_control()
+
+        if self.possible_inputs[input_player2][1] == 0:
+            self.player2.mode_normal()
+        else:
+            self.player2.mode_ball_control()
+
+        # kick the ball
+        kick_stats = [None, None]
+        d = math.sqrt(self.game.pitch_w ** 2 + self.game.pitch_h ** 2)
+
+        ballkick_player1 = 0
+        if self.possible_inputs[input_player1][2] != 0:
+            kick_stats[0] = (self.player1.p - self.ball.p).length() / d
+            ballkick_player1 = self.player1.kick(self.ball.p + self.states_translation_array[self.possible_inputs[input_player1][0]] * 30 * self.possible_inputs[input_player1][2])
+
+        ballkick_player2 = 0
+        if self.possible_inputs[input_player2][2] != 0:
+            kick_stats[1] = (self.player2.p - self.ball.p).length() / d
+            ballkick_player2 = self.player2.kick(self.ball.p + self.states_translation_array[self.possible_inputs[input_player2][0]] * 30 * self.possible_inputs[input_player2][2])
+
 
         # manage inputs(for debug and to avoid "not responding" communicate)
 
@@ -83,18 +108,14 @@ class GameController( object ):
                     return
 
                 if event.type == pygame.MOUSEBUTTONDOWN and self.display_mode == 2:
-                    print(self.get_reward()[1])
+                    print(self.get_reward((ballkick_player1, ballkick_player2))[1])
 
-
+                
         # render next frame
         self.game.redraw()
 
-        # analyse ball velocity vector
-        # TODO
-
-
         # return rendered state pack
-        return self.get_reward(), self.game.is_done()
+        return self.get_reward((ballkick_player1, ballkick_player2)), self.game.is_done(), kick_stats
 
 
     def get_action_length(self):
@@ -108,57 +129,43 @@ class GameController( object ):
 
 
     def get_state_1(self):
-        # returns array of states for current frame
-        # return [int(self.player1.p.x / 2), int(self.player1.p.y / 2),
-        #        int(self.player1.v.x / 2), int(self.player1.v.y / 2), 
-        #        int(self.player2.p.x / 2), int(self.player2.p.y / 2),
-        #        int(self.player2.v.x / 2), int(self.player2.v.y / 2),
-        #        int(self.ball.p.x / 2), int(self.ball.p.y / 2), 
-        #        int(self.ball.v.x / 2), int(self.ball.v.y / 2),
-        #        int(self.player1_target_goal / 2)]
-
-        return np.array([self.player1.p.x / self.game.screen_w,
-                        self.player1.p.y / self.game.screen_h,
-                        (self.player1.v.x - self.player1.v_max) / self.player1.v_max,
-                        (self.player1.v.y - self.player1.v_max) / self.player1.v_max,
-                        self.ball.p.x / self.game.screen_w,  
-                        self.ball.p.y / self.game.screen_h])
+        return np.array([self.player1.p.x / self.game.screen_w, self.player1.p.y / self.game.screen_h,
+                         (self.player1.v.x - self.player1.v_max) / self.player1.v_max, (self.player1.v.y - self.player1.v_max) / self.player1.v_max,
+                         self.player1.ball_control,
+                         self.player2.p.x / self.game.screen_w, self.player2.p.y / self.game.screen_h,
+                         (self.player2.v.x - self.player2.v_max) / self.player2.v_max, (self.player2.v.y - self.player2.v_max) / self.player2.v_max,
+                         self.player2.ball_control,
+                         self.ball.p.x / self.game.screen_w, self.ball.p.y / self.game.screen_h,
+                         (self.ball.v.x - self.ball.v_max) / self.ball.v_max, (self.ball.v.y - self.ball.v_max) / self.ball.v_max,
+                         self.player1_target_goal / self.game.screen_w])
 
 
     def get_state_2(self):
-        # returns array of states for current frame
-        # return [int(self.player2.p.x / 2), int(self.player2.p.y / 2),
-        #        int(self.player2.v.x / 2), int(self.player2.v.y / 2), 
-        #        int(self.player1.p.x / 2), int(self.player1.p.y / 2),
-        #        int(self.player1.v.x / 2), int(self.player1.v.y / 2),
-        #        int(self.ball.p.x / 2), int(self.ball.p.y / 2), 
-        #        int(self.ball.v.x / 2), int(self.ball.v.y / 2),
-        #        int(self.player2_target_goal / 2)]
+        return np.array([self.player2.p.x / self.game.screen_w, self.player2.p.y / self.game.screen_h,
+                         (self.player2.v.x - self.player2.v_max) / self.player2.v_max, (self.player2.v.y - self.player2.v_max) / self.player2.v_max,
+                         self.player2.ball_control,
+                         self.player1.p.x / self.game.screen_w, self.player1.p.y / self.game.screen_h,
+                         (self.player1.v.x - self.player1.v_max) / self.player1.v_max, (self.player1.v.y - self.player1.v_max) / self.player1.v_max,
+                         self.player1.ball_control,
+                         self.ball.p.x / self.game.screen_w, self.ball.p.y / self.game.screen_h,
+                         (self.ball.v.x - self.ball.v_max) / self.ball.v_max, (self.ball.v.y - self.ball.v_max) / self.ball.v_max,
+                         self.player2_target_goal / self.game.screen_w])
 
-        return np.array([self.player2.p.x / self.game.screen_w,
-                         self.player2.p.y / self.game.screen_h,
-                         (self.player2.v.x - self.player2.v_max) / self.player2.v_max,
-                         (self.player2.v.y - self.player2.v_max) / self.player2.v_max,
-                         self.ball.p.x / self.game.screen_w,
-                         self.ball.p.y / self.game.screen_h])
+    def get_reward(self, ballkicks):
+        # get diagonal length
+        d = math.sqrt(self.game.pitch_w ** 2 + self.game.pitch_h ** 2)
 
-    def get_reward(self):
-        # get distance between player1 and the ball
-        # reward_player1 = (self.game.pitch_w - abs(self.player1.p.x + self.player1.v.x - self.ball.p.x)) / self.game.pitch_w
+        # count reward from player-to-ball distance
+        position_reward_player1 = (d - (self.player1.p - self.ball.p).length()) / d
+        position_reward_player2 = (d - (self.player2.p - self.ball.p).length()) / d
 
-        # get distance between ball and the opponent's goal
-        # reward_player1 += self.game.team_left.goal.get_dist(self.ball.p) / 2
+        # count reward from ball-to-goal distance
+        goal_reward_player1 = (d - self.game.team_left.goal.get_dist(self.ball.p)) / d
+        goal_reward_player2 = (d - self.game.team_right.goal.get_dist(self.ball.p)) / d
 
-        # get distance between player2 and the ball
-        # reward_player2 = (self.game.pitch_w - abs(self.player2.p.x + self.player2.v.x - self.ball.p.x)) / self.game.pitch_w
-
-
-        # get distance between ball and the opponent's goal
-        # reward_player2 += self.game.team_right.goal.get_dist(self.ball.p) / 2
-
-        d = math.sqrt(self.game.pitch_w**2 + self.game.pitch_h**2)
-        reward_player1 = (d - (self.player1.p - self.ball.p).length()) / d
-        reward_player2 = (d - (self.player2.p - self.ball.p).length()) / d
+        # count sum reward
+        reward_player1 = goal_reward_player1 + position_reward_player1 * 0.3 + ballkicks[0] * 0.1
+        reward_player2 = goal_reward_player2 + position_reward_player2 * 0.3 + ballkicks[1] * 0.1
 
         return [reward_player1, reward_player2]
 

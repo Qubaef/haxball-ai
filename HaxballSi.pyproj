@@ -35,6 +35,9 @@
     <Compile Include="Goal.py" />
     <Compile Include="Player.py" />
     <Compile Include="Post.py" />
+    <Compile Include="Stats.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Team.py" />
   </ItemGroup>
   <ItemGroup>
