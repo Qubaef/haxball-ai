@@ -30,7 +30,7 @@ def play_games(games_number, frames_per_game, display_mode):
         env.game.game_reset()
 
         # Copy network
-        # dqn_copy = clone_dqn(dqn_learn)
+        dqn_copy = clone_dqn(dqn_learn)
         
         # Get players states
         state_player1 = env.get_state_1()
@@ -43,11 +43,11 @@ def play_games(games_number, frames_per_game, display_mode):
         for frame in range(frames_per_game):
       
             # Make actions depending on states (basing on network's copy)
-            action_player1 = dqn_learn.make_move(np.reshape(state_player1, [1, len(state_player1)]))
-            action_player2 = dqn_learn.make_move(np.reshape(state_player2, [1, len(state_player2)]))
+            action_player1 = dqn_copy.make_move(np.reshape(state_player1, [1, len(state_player1)]))
+            action_player2 = dqn_copy.make_move(np.reshape(state_player2, [1, len(state_player2)]))
     
             # simulate frame
-            reward, done, kick_stats = env.next_frame(action_player1, 8)
+            reward, done, kick_stats = env.next_frame(action_player1, action_player2)
 
             # count average reward
             if(save_charts == 1):
@@ -70,7 +70,11 @@ def play_games(games_number, frames_per_game, display_mode):
             state_player2 = next_state_player2
 
             # Learn from saved memory and save loss to plot
-            stats.memorize_loss(dqn_learn.learn())
+            if save_charts == 1:
+                 stats.memorize_loss(dqn_learn.learn())
+            # else:
+            #     dqn_learn.learn()
+           
 
             if done != 0:
                 break
@@ -116,11 +120,11 @@ load_model = 0
 
 # save_model = 0 - don't save learned model after every epoch
 # save_model = 1 - save learned model afetr every epoch (will overwrite previously saved model)
-save_model = 1
+save_model = 0
 
 # save_charts = 0 - don't save charts
 # save_charts = 1 - save charts after every epoch
-save_charts = 1
+save_charts = 0
 
 # Number of epochs
 epochs_number = 1000
@@ -129,7 +133,7 @@ epochs_number = 1000
 games_per_epoch = 40
 
 # Number of frames per game (frames_per_game / 60 = seconds in display mode)
-frames_per_game = 800
+frames_per_game = 500
 
 # learn batch size
 batch_size = int(100)
