@@ -14,7 +14,7 @@ class DQN:
 
         self.input_count = state_size
         self.output_count = actions_number
-        self.epsilon = 0
+        self.epsilon = 1
         self.epsilon_min_val = 0.05
         self.epsilon_decay = 0.9999
         self.learning_rate = 0.001

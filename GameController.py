@@ -48,9 +48,10 @@ class GameController( object ):
         self.states_translation_array[7] = pygame.math.Vector2(0, 1).normalize()
         self.states_translation_array[8] = pygame.math.Vector2(1, 1).normalize()
 
-        self.possible_inputs = list(itertools.product(range(9), range(7)))
-        self.not_possible_inputs = list(itertools.product([0], range(1,7)))
-        self.possible_inputs = [item for item in self.possible_inputs if item not in self.not_possible_inputs]
+        self.possible_inputs = list(itertools.product(range(9)))
+        # self.possible_inputs = list(itertools.product(range(9), range(7)))
+        # self.not_possible_inputs = list(itertools.product([0], range(1,7)))
+        # self.possible_inputs = [item for item in self.possible_inputs if item not in self.not_possible_inputs]
         
 
     def next_frame(self, input_player1, input_player2):
@@ -64,18 +65,18 @@ class GameController( object ):
         self.player2.velocity_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
 
         # kick the ball
-        kick_stats = [None, None]
-        d = math.sqrt(self.game.pitch_w ** 2 + self.game.pitch_h ** 2)
-
+        # kick_stats = [None, None]
+        # d = math.sqrt(self.game.pitch_w ** 2 + self.game.pitch_h ** 2)
+        # 
         ballkick_player1 = 0
-        if self.possible_inputs[input_player1][1] != 0:
-            kick_stats[0] = (self.player1.p - self.ball.p).length() / d
-            ballkick_player1 = self.player1.kick(self.ball.p + self.states_translation_array[self.possible_inputs[input_player1][0]] * 30 * self.possible_inputs[input_player1][1])
-
+        # if self.possible_inputs[input_player1][1] != 0:
+        #     kick_stats[0] = (self.player1.p - self.ball.p).length() / d
+        #     ballkick_player1 = self.player1.kick(self.ball.p + self.states_translation_array[self.possible_inputs[input_player1][0]] * 30 * self.possible_inputs[input_player1][1])
+        # 
         ballkick_player2 = 0
-        if self.possible_inputs[input_player2][1] != 0:
-            kick_stats[1] = (self.player2.p - self.ball.p).length() / d
-            ballkick_player2 = self.player2.kick(self.ball.p + self.states_translation_array[self.possible_inputs[input_player2][0]] * 30 * self.possible_inputs[input_player2][1])
+        # if self.possible_inputs[input_player2][1] != 0:
+        #     kick_stats[1] = (self.player2.p - self.ball.p).length() / d
+        #     ballkick_player2 = self.player2.kick(self.ball.p + self.states_translation_array[self.possible_inputs[input_player2][0]] * 30 * self.possible_inputs[input_player2][1])
 
 
         # manage inputs(for debug and to avoid "not responding" communicate)
@@ -103,7 +104,7 @@ class GameController( object ):
         self.game.redraw()
 
         # return rendered state pack
-        return self.get_reward((ballkick_player1, ballkick_player2)), self.game.is_done(), kick_stats
+        return self.get_reward((ballkick_player1, ballkick_player2)), self.game.is_done()
 
 
     def get_action_length(self):
@@ -120,6 +121,13 @@ class GameController( object ):
 
 
     def get_state_1(self):
+        # return np.array([self.player1.p.x / self.game.screen_w, self.player1.p.y / self.game.screen_h,
+        #                  (self.player1.v.x - self.player1.v_max) / self.player1.v_max, (self.player1.v.y - self.player1.v_max) / self.player1.v_max,
+        #                  self.player2.p.x / self.game.screen_w, self.player2.p.y / self.game.screen_h,
+        #                  (self.player2.v.x - self.player2.v_max) / self.player2.v_max, (self.player2.v.y - self.player2.v_max) / self.player2.v_max,
+        #                  self.ball.p.x / self.game.screen_w, self.ball.p.y / self.game.screen_h,
+        #                  (self.ball.v.x - self.ball.v_max) / self.ball.v_max, (self.ball.v.y - self.ball.v_max) / self.ball.v_max,
+        #                  self.player1_target_goal / self.game.screen_w])
         return np.array([self.player1.p.x / self.game.screen_w, self.player1.p.y / self.game.screen_h,
                          (self.player1.v.x - self.player1.v_max) / self.player1.v_max, (self.player1.v.y - self.player1.v_max) / self.player1.v_max,
                          self.player2.p.x / self.game.screen_w, self.player2.p.y / self.game.screen_h,
@@ -130,6 +138,13 @@ class GameController( object ):
 
 
     def get_state_2(self):
+        # return np.array([self.player2.p.x / self.game.screen_w, self.player2.p.y / self.game.screen_h,
+        #                  (self.player2.v.x - self.player2.v_max) / self.player2.v_max, (self.player2.v.y - self.player2.v_max) / self.player2.v_max,
+        #                  self.player1.p.x / self.game.screen_w, self.player1.p.y / self.game.screen_h,
+        #                  (self.player1.v.x - self.player1.v_max) / self.player1.v_max, (self.player1.v.y - self.player1.v_max) / self.player1.v_max,
+        #                  self.ball.p.x / self.game.screen_w, self.ball.p.y / self.game.screen_h,
+        #                  (self.ball.v.x - self.ball.v_max) / self.ball.v_max, (self.ball.v.y - self.ball.v_max) / self.ball.v_max,
+        #                  self.player2_target_goal / self.game.screen_w])
         return np.array([self.player2.p.x / self.game.screen_w, self.player2.p.y / self.game.screen_h,
                          (self.player2.v.x - self.player2.v_max) / self.player2.v_max, (self.player2.v.y - self.player2.v_max) / self.player2.v_max,
                          self.player1.p.x / self.game.screen_w, self.player1.p.y / self.game.screen_h,

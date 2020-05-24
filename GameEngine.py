@@ -12,7 +12,7 @@ from Collision import Collision
 class GameEngine( object ):
     # object containing Game's data
 
-    screen_w = 800
+    screen_w = 1100
     screen_h = int(screen_w / 1.57)
 
     pitch_w = int(screen_w * 0.8)

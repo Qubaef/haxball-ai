@@ -48,15 +48,12 @@ def play_games(games_number, frames_per_game, display_mode):
             action_player2 = dqn_learn.make_move(np.reshape(state_player2, [1, len(state_player2)]))
     
             # simulate frame
-            reward, done, kick_stats = env.next_frame(action_player1, action_player2)
+            reward, done = env.next_frame(action_player1, action_player2)
 
             # count average reward
             if(save_charts == 1):
                 average_reward_1 += reward[0] / frames_per_game
                 average_reward_2 += reward[1] / frames_per_game
-
-                stats.memorize_kicks(kick_stats[0])
-                stats.memorize_kicks(kick_stats[1])
       
             # get players states
             next_state_player1 = env.get_state_1()
@@ -116,7 +113,7 @@ filename_copy = "copy"
 
 # load_model = 0 - initailize new model with random weights
 # load_model = 1 - load model from file
-load_model = 1
+load_model = 0
 
 # save_model = 0 - don't save learned model after every epoch
 # save_model = 1 - save learned model afetr every epoch (will overwrite previously saved model)
@@ -130,10 +127,10 @@ save_charts = 0
 epochs_number = 1000
 
 # Number of games per epoch
-games_per_epoch = 100
+games_per_epoch = 60
 
 # Number of frames per game (frames_per_game / 60 = seconds in display mode)
-frames_per_game = 300
+frames_per_game = 400
 
 # learn batch size
 batch_size = int(100)
