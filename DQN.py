@@ -40,8 +40,8 @@ class DQN:
         model = tf.keras.Sequential()
         # model.add(tf.keras.layers.LeakyReLU(input_shape = (self.input_count,)))
         model.add(tf.keras.layers.Dense(32, input_dim = self.input_count, activation="tanh"))
+        model.add(tf.keras.layers.Dense(64, activation="relu"))
         model.add(tf.keras.layers.Dense(128, activation="relu"))
-        model.add(tf.keras.layers.Dense(256, activation="relu"))
         model.add(tf.keras.layers.Dense(self.output_count))
 
         model.compile(loss= tf.keras.losses.Huber() , optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate))
@@ -61,7 +61,7 @@ class DQN:
 
 
     def load_weights(self, filename):
-        self.model.load_weights(filename)
+        self.model.load_weights(filename).expect_partial()
 
 
     # learn model from given batch

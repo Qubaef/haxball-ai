@@ -48,46 +48,34 @@ class GameController( object ):
         self.states_translation_array[7] = pygame.math.Vector2(0, 1).normalize()
         self.states_translation_array[8] = pygame.math.Vector2(1, 1).normalize()
 
-        self.possible_inputs = list(itertools.product(range(9), range(2), range(7)))
-        self.not_possible_inputs = list(itertools.product([0], range(2), range(1,7)))
+        self.possible_inputs = list(itertools.product(range(9), range(7)))
+        self.not_possible_inputs = list(itertools.product([0], range(1,7)))
         self.possible_inputs = [item for item in self.possible_inputs if item not in self.not_possible_inputs]
         
 
     def next_frame(self, input_player1, input_player2):
 
         # Player's input is formated as follows:
-        # [0] - number from range <0,8> - used to determine direction of player's movement and player kick (if [2] == 1)
-        # [1] - bool - used to determine if player is in ball controll mode (0 - normal mode, 1 - ball control mode)
-        # [2] - number from range <0,5> - used to determine strength of ball kick
+        # [0] - number from range <0,8> - used to determine direction of player's movement and player kick (if [1] > 1)
+        # [1] - number from range <0,5> - used to determine strength of ball kick
 
         # set players moves
         self.player1.velocity_add(self.states_translation_array[self.possible_inputs[input_player1][0]])
         self.player2.velocity_add(self.states_translation_array[self.possible_inputs[input_player2][0]])
-
-        # set ball control
-        if self.possible_inputs[input_player2][1] == 0:
-            self.player1.mode_normal()
-        else:
-            self.player1.mode_ball_control()
-
-        if self.possible_inputs[input_player2][1] == 0:
-            self.player2.mode_normal()
-        else:
-            self.player2.mode_ball_control()
 
         # kick the ball
         kick_stats = [None, None]
         d = math.sqrt(self.game.pitch_w ** 2 + self.game.pitch_h ** 2)
 
         ballkick_player1 = 0
-        if self.possible_inputs[input_player1][2] != 0:
+        if self.possible_inputs[input_player1][1] != 0:
             kick_stats[0] = (self.player1.p - self.ball.p).length() / d
-            ballkick_player1 = self.player1.kick(self.ball.p + self.states_translation_array[self.possible_inputs[input_player1][0]] * 30 * self.possible_inputs[input_player1][2])
+            ballkick_player1 = self.player1.kick(self.ball.p + self.states_translation_array[self.possible_inputs[input_player1][0]] * 30 * self.possible_inputs[input_player1][1])
 
         ballkick_player2 = 0
-        if self.possible_inputs[input_player2][2] != 0:
+        if self.possible_inputs[input_player2][1] != 0:
             kick_stats[1] = (self.player2.p - self.ball.p).length() / d
-            ballkick_player2 = self.player2.kick(self.ball.p + self.states_translation_array[self.possible_inputs[input_player2][0]] * 30 * self.possible_inputs[input_player2][2])
+            ballkick_player2 = self.player2.kick(self.ball.p + self.states_translation_array[self.possible_inputs[input_player2][0]] * 30 * self.possible_inputs[input_player2][1])
 
 
         # manage inputs(for debug and to avoid "not responding" communicate)
@@ -125,16 +113,17 @@ class GameController( object ):
 
     def get_state_length(self):
         # returns length of the state
-        return len(self.get_state_1())
+        if len(self.get_state_1()) == len(self.get_state_2()):
+            return len(self.get_state_1())
+        else:
+            print("Player's states are different in size!")
 
 
     def get_state_1(self):
         return np.array([self.player1.p.x / self.game.screen_w, self.player1.p.y / self.game.screen_h,
                          (self.player1.v.x - self.player1.v_max) / self.player1.v_max, (self.player1.v.y - self.player1.v_max) / self.player1.v_max,
-                         self.player1.ball_control,
                          self.player2.p.x / self.game.screen_w, self.player2.p.y / self.game.screen_h,
                          (self.player2.v.x - self.player2.v_max) / self.player2.v_max, (self.player2.v.y - self.player2.v_max) / self.player2.v_max,
-                         self.player2.ball_control,
                          self.ball.p.x / self.game.screen_w, self.ball.p.y / self.game.screen_h,
                          (self.ball.v.x - self.ball.v_max) / self.ball.v_max, (self.ball.v.y - self.ball.v_max) / self.ball.v_max,
                          self.player1_target_goal / self.game.screen_w])
@@ -143,10 +132,8 @@ class GameController( object ):
     def get_state_2(self):
         return np.array([self.player2.p.x / self.game.screen_w, self.player2.p.y / self.game.screen_h,
                          (self.player2.v.x - self.player2.v_max) / self.player2.v_max, (self.player2.v.y - self.player2.v_max) / self.player2.v_max,
-                         self.player2.ball_control,
                          self.player1.p.x / self.game.screen_w, self.player1.p.y / self.game.screen_h,
                          (self.player1.v.x - self.player1.v_max) / self.player1.v_max, (self.player1.v.y - self.player1.v_max) / self.player1.v_max,
-                         self.player1.ball_control,
                          self.ball.p.x / self.game.screen_w, self.ball.p.y / self.game.screen_h,
                          (self.ball.v.x - self.ball.v_max) / self.ball.v_max, (self.ball.v.y - self.ball.v_max) / self.ball.v_max,
                          self.player2_target_goal / self.game.screen_w])
@@ -164,8 +151,8 @@ class GameController( object ):
         goal_reward_player2 = (d - self.game.team_right.goal.get_dist(self.ball.p)) / d
 
         # count sum reward
-        reward_player1 = goal_reward_player1 + position_reward_player1 * 0.3 + ballkicks[0] * 0.1
-        reward_player2 = goal_reward_player2 + position_reward_player2 * 0.3 + ballkicks[1] * 0.1
+        reward_player1 = goal_reward_player1 + position_reward_player1 * 0.2 + ballkicks[0] * 0.1
+        reward_player2 = goal_reward_player2 + position_reward_player2 * 0.2 + ballkicks[1] * 0.1
 
         return [reward_player1, reward_player2]
 

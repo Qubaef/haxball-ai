@@ -1,5 +1,6 @@
 import numpy as np
 import os, glob, time, random
+import tensorflow as tf
 from GameController import GameController
 from DQN import DQN
 from Stats import Stats
@@ -30,7 +31,7 @@ def play_games(games_number, frames_per_game, display_mode):
         env.game.game_reset()
 
         # Copy network
-        dqn_copy = clone_dqn(dqn_learn)
+        # dqn_copy = clone_dqn(dqn_learn)
         
         # Get players states
         state_player1 = env.get_state_1()
@@ -43,8 +44,8 @@ def play_games(games_number, frames_per_game, display_mode):
         for frame in range(frames_per_game):
       
             # Make actions depending on states (basing on network's copy)
-            action_player1 = dqn_copy.make_move(np.reshape(state_player1, [1, len(state_player1)]))
-            action_player2 = dqn_copy.make_move(np.reshape(state_player2, [1, len(state_player2)]))
+            action_player1 = dqn_learn.make_move(np.reshape(state_player1, [1, len(state_player1)]))
+            action_player2 = dqn_learn.make_move(np.reshape(state_player2, [1, len(state_player2)]))
     
             # simulate frame
             reward, done, kick_stats = env.next_frame(action_player1, action_player2)
@@ -74,7 +75,6 @@ def play_games(games_number, frames_per_game, display_mode):
                  stats.memorize_loss(dqn_learn.learn())
             # else:
             #     dqn_learn.learn()
-           
 
             if done != 0:
                 break
@@ -95,7 +95,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 # displayMode = 1 - display game
 # displayMode = 2 - display game; control one player with mouse; LPM displays reward for his current state
 # displayMode = 3 - same as 1, but display plots
-display_mode = 0
+display_mode = 1
 
 # weights folder name
 results_foldername = "results"
@@ -116,7 +116,7 @@ filename_copy = "copy"
 
 # load_model = 0 - initailize new model with random weights
 # load_model = 1 - load model from file
-load_model = 0
+load_model = 1
 
 # save_model = 0 - don't save learned model after every epoch
 # save_model = 1 - save learned model afetr every epoch (will overwrite previously saved model)
@@ -130,10 +130,10 @@ save_charts = 0
 epochs_number = 1000
 
 # Number of games per epoch
-games_per_epoch = 40
+games_per_epoch = 100
 
 # Number of frames per game (frames_per_game / 60 = seconds in display mode)
-frames_per_game = 500
+frames_per_game = 300
 
 # learn batch size
 batch_size = int(100)
