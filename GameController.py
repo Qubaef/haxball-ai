@@ -130,8 +130,6 @@ class GameController( object ):
         #                  self.player1_target_goal / self.game.screen_w])
         return np.array([self.player1.p.x / self.game.screen_w, self.player1.p.y / self.game.screen_h,
                          (self.player1.v.x - self.player1.v_max) / self.player1.v_max, (self.player1.v.y - self.player1.v_max) / self.player1.v_max,
-                         self.player2.p.x / self.game.screen_w, self.player2.p.y / self.game.screen_h,
-                         (self.player2.v.x - self.player2.v_max) / self.player2.v_max, (self.player2.v.y - self.player2.v_max) / self.player2.v_max,
                          self.ball.p.x / self.game.screen_w, self.ball.p.y / self.game.screen_h,
                          (self.ball.v.x - self.ball.v_max) / self.ball.v_max, (self.ball.v.y - self.ball.v_max) / self.ball.v_max,
                          self.player1_target_goal / self.game.screen_w])
@@ -147,8 +145,6 @@ class GameController( object ):
         #                  self.player2_target_goal / self.game.screen_w])
         return np.array([self.player2.p.x / self.game.screen_w, self.player2.p.y / self.game.screen_h,
                          (self.player2.v.x - self.player2.v_max) / self.player2.v_max, (self.player2.v.y - self.player2.v_max) / self.player2.v_max,
-                         self.player1.p.x / self.game.screen_w, self.player1.p.y / self.game.screen_h,
-                         (self.player1.v.x - self.player1.v_max) / self.player1.v_max, (self.player1.v.y - self.player1.v_max) / self.player1.v_max,
                          self.ball.p.x / self.game.screen_w, self.ball.p.y / self.game.screen_h,
                          (self.ball.v.x - self.ball.v_max) / self.ball.v_max, (self.ball.v.y - self.ball.v_max) / self.ball.v_max,
                          self.player2_target_goal / self.game.screen_w])

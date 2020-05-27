@@ -10,18 +10,19 @@ import matplotlib.pyplot as plt
 
 class DQN:
 
-    def __init__(self, state_size, actions_number, batch_size, print_model, session = None):
+    def __init__(self, state_size, actions_number, batch_size, print_model, epsilon = 1, epsilon_decay = 0.9999, session = None):
 
         self.input_count = state_size
         self.output_count = actions_number
-        self.epsilon = 1
+        self.epsilon = epsilon
         self.epsilon_min_val = 0.05
-        self.epsilon_decay = 0.9999
-        self.learning_rate = 0.001
-        self.gamma = 0.95
+        self.epsilon_decay = epsilon_decay
+        self.learning_rate = 0.0001
+        self.gamma = 0.99
         self.batch_size = batch_size
-        self.memory = Memory(max_size=1000000, input_dims=state_size)
+        self.memory = Memory(max_size=100000, input_dims=state_size)
 
+        self.target_model = self.define_model(print_model, session)
         self.model = self.define_model(print_model, session)
 
     def define_model(self, print_model, session):
@@ -39,12 +40,12 @@ class DQN:
 
         model = tf.keras.Sequential()
         # model.add(tf.keras.layers.LeakyReLU(input_shape = (self.input_count,)))
-        model.add(tf.keras.layers.Dense(32, input_dim = self.input_count, activation="tanh"))
-        model.add(tf.keras.layers.Dense(64, activation="relu"))
-        model.add(tf.keras.layers.Dense(128, activation="relu"))
+        model.add(tf.keras.layers.Dense(128, input_dim = self.input_count, activation="tanh"))
+        model.add(tf.keras.layers.Dense(256, activation='relu'))
+        model.add(tf.keras.layers.Dense(64, activation='relu'))
         model.add(tf.keras.layers.Dense(self.output_count))
 
-        model.compile(loss= tf.keras.losses.Huber() , optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate))
+        model.compile(loss='mse' , optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate))
 
         # save model as model.png
         # os.environ["PATH"] += os.pathsep + 'C:\Program Files (x86)\Graphviz2.38\bin\'
@@ -55,6 +56,8 @@ class DQN:
 
         return model
 
+    def update_target_model(self):
+        self.target_model.set_weights(self.model.get_weights())
 
     def save_weights(self, filename):
         self.model.save_weights(filename)
@@ -69,13 +72,16 @@ class DQN:
         if not self.memory.mem_count < self.batch_size:
             states, next_states, rewards, actions, dones = self.memory.sample_batch(self.batch_size)
 
-            q_eval = self.model.predict(states)
-            q_next = self.model.predict(next_states)
+            q_eval = self.model.predict(next_states)
+            q_next = self.target_model.predict(next_states)
+            q_pred = self.model.predict(states)
+            best_actions = np.argmax(q_eval, axis=1)
 
-            q_target = np.copy(q_eval)
+            q_target = q_pred
+
             batch_index = np.arange(self.batch_size, dtype=np.int32)
 
-            q_target[batch_index, actions] = rewards + (dones * 10) + self.gamma * np.max(q_next, axis=1)
+            q_target[batch_index, actions] = rewards + (dones * 10) + self.gamma * q_next[batch_index, best_actions]
 
             loss = self.model.train_on_batch(states, q_target)
             if self.epsilon > self.epsilon_min_val:
