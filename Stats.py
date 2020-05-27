@@ -29,6 +29,7 @@ class Stats( object ):
         plt.title("Średnia nagroda od numeru gry")
         plt.plot(range(1, self.games_per_epoch + 1), self.avg_reward_story_1, 'b')
         plt.plot(range(1, self.games_per_epoch + 1), self.avg_reward_story_2, 'r')
+        plt.plot([1, self.games_per_epoch + 1], [0, 0], 'y')
         plt.savefig(self.filepath + 'average_reward_' + str(self.epoch_number) + '.png')
         plt.clf()
 
