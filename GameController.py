@@ -212,11 +212,9 @@ class GameController( object ):
         if goal_left_angle == 1:
             ball_vec_reward_player1 = 1
             ball_vec_reward_player2 = -1
-            print('player1 +1')
         elif goal_right_angle == 1:
             ball_vec_reward_player1 = -1
             ball_vec_reward_player2 = 1
-            print('player2 +1')
         else:
             ball_vec_reward_player1 = 0
             ball_vec_reward_player2 = 0

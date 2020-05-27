@@ -15,7 +15,7 @@ class DQN:
         self.input_count = state_size
         self.output_count = actions_number
         self.epsilon = epsilon
-        self.epsilon_min_val = 0.05
+        self.epsilon_min_val = 0.1
         self.epsilon_decay = epsilon_decay
         self.learning_rate = 0.0001
         self.gamma = 0.99
@@ -40,12 +40,12 @@ class DQN:
 
         model = tf.keras.Sequential()
         # model.add(tf.keras.layers.LeakyReLU(input_shape = (self.input_count,)))
-        model.add(tf.keras.layers.Dense(128, input_dim = self.input_count, activation="tanh"))
-        model.add(tf.keras.layers.Dense(256, activation='relu'))
+        model.add(tf.keras.layers.Dense(32, input_dim = self.input_count, activation="tanh"))
         model.add(tf.keras.layers.Dense(64, activation='relu'))
+        model.add(tf.keras.layers.Dense(128, activation='relu'))
         model.add(tf.keras.layers.Dense(self.output_count))
 
-        model.compile(loss='mse' , optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate))
+        model.compile(loss = tf.keras.losses.Huber(), optimizer=tf.keras.optimizers.Adam(lr = self.learning_rate))
 
         # save model as model.png
         # os.environ["PATH"] += os.pathsep + 'C:\Program Files (x86)\Graphviz2.38\bin\'
@@ -56,8 +56,10 @@ class DQN:
 
         return model
 
+
     def update_target_model(self):
         self.target_model.set_weights(self.model.get_weights())
+
 
     def save_weights(self, filename):
         self.model.save_weights(filename)
