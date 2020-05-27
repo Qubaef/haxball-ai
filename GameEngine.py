@@ -365,3 +365,5 @@ class GameEngine( object ):
         self.team_left.score = 0
         self.team_right.score = 0
         self.done = 0
+        # self.balls[0].p = pygame.math.Vector2(self.screen_w / 2 + 100, self.screen_h / 2 + 100)
+        # self.balls[0].v = pygame.math.Vector2(-5, 0)
