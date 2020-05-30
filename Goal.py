@@ -58,7 +58,7 @@ class Goal( object ):
        vec_post_1 = self.post_up.p - ball_p
        vec_post_2 = self.post_down.p - ball_p
 
-       if ball_v.length() < 0.5:
+       if ball_v.length() < 0.1:
            return -1
 
        a1 = normal.angle_to(vec_post_1)

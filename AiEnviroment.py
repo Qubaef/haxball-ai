@@ -32,11 +32,11 @@ def play_games(games_number, frames_per_game, display_mode):
         for frame in range(frames_per_game):
       
             # Make actions depending on states (basing on network's copy)
-            action_player1 = dqn_learn.make_move(np.reshape(state_player1, [1, len(state_player1)]))
-            action_player2 = dqn_learn.make_move(np.reshape(state_player2, [1, len(state_player2)]))
+            action_player1 = dqn_learn.make_move(np.reshape(state_player1, [1, len(state_player1)]), env.get_range(1, exp_range_size))
+            action_player2 = dqn_learn.make_move(np.reshape(state_player2, [1, len(state_player2)]), env.get_range(2, exp_range_size))
     
             # simulate frame
-            reward, done = env.next_frame(action_player1, action_player2)
+            reward, done = env.next_frame(action_player1, action_player2, frames_per_game, frame)
             if flag:
                 start_reward_1 = reward[0]
                 start_reward_2 = reward[1]
@@ -75,7 +75,7 @@ def play_games(games_number, frames_per_game, display_mode):
 # Set to gpu
 # If you dont have nvidia gpu, comment lines below
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 # Constants
 
@@ -99,7 +99,7 @@ filename_copy = "copy"
 # displayMode = 1 - display game
 # displayMode = 2 - display game; control one player with mouse; LPM displays reward for his current state
 # displayMode = 3 - same as 1, but display plots
-display_mode = 1
+display_mode = 2
 
 # load_model = 0 - initailize new model with random weights
 # load_model = 1 - load model from file
@@ -120,7 +120,7 @@ epochs_number = 1000
 games_per_epoch = 60
 
 # Number of frames per game (frames_per_game / 60 = seconds in display mode)
-frames_per_game = 400
+frames_per_game = 4000
 
 # learn batch size
 batch_size = int(128)
@@ -128,14 +128,18 @@ batch_size = int(128)
 # epsilon
 epsilon = 0
 # epsilon decay
-epsilon_decay = 0.9999
+epsilon_decay = 0.99999
 
 # Load enviroment
 env = GameController(display_mode)
 
+# calculate number of exploration_ranges
+exp_range_size = 800
+exploration_ranges = int(env.d / exp_range_size + 1)
+
 
 # Initalize dqn
-dqn_learn = DQN(env.get_state_length(), env.get_action_length(), batch_size, 1, epsilon=epsilon, epsilon_decay=epsilon_decay)
+dqn_learn = DQN(env.get_state_length(), env.get_action_length(), batch_size, 1, exploration_ranges=exploration_ranges, epsilon=epsilon, epsilon_decay=epsilon_decay)
 if(load_model == 1):
     dqn_learn.load_weights(results_foldername + '/' + filename_dqn)
 
@@ -146,7 +150,7 @@ if save_charts == 1:
 
 # Learn main loop
 for epoch in range(epochs_number):
-    print("Epoch:", epoch, "epsilon:", dqn_learn.epsilon)
+    print("Epoch:", epoch, "epsilon:", dqn_learn.epsilon_ranges)
 
     if save_model == 1 or save_charts == 1:
         if not os.path.exists(results_foldername + '/' + str(epoch)):

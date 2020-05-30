@@ -19,6 +19,8 @@ class GameController( object ):
         self.game = GameEngine(display_mode)
         self.display_mode = display_mode
 
+        self.d = math.sqrt(self.game.pitch_w ** 2 + self.game.pitch_h ** 2)
+
         self.ball = Ball(self.game, 500, 300, 0)
         self.game.new_ball(self.ball)
 
@@ -70,7 +72,7 @@ class GameController( object ):
         # self.possible_inputs = [item for item in self.possible_inputs if item not in self.not_possible_inputs]
         
 
-    def next_frame(self, input_player1, input_player2):
+    def next_frame(self, input_player1, input_player2, max_frames, curr_frame):
 
         # Player's input is formated as follows:
         # [0] - number from range <0,8> - used to determine direction of player's movement and player kick (if [1] > 1)
@@ -115,14 +117,15 @@ class GameController( object ):
                     return
 
                 if event.type == pygame.MOUSEBUTTONDOWN and self.display_mode == 2:
-                    print(self.get_reward((ballkick_player1, ballkick_player2))[1])
+                    print(self.get_reward((ballkick_player1, ballkick_player2), max_frames, curr_frame)[1])
+                    # print(self.get_range(2, 100))
 
                 
         # render next frame
         self.game.redraw()
 
         # return rendered state pack
-        return self.get_reward((ballkick_player1, ballkick_player2)), self.game.is_done()
+        return self.get_reward((ballkick_player1, ballkick_player2), max_frames, curr_frame), self.game.is_done()
 
 
     def get_action_length(self):
@@ -197,13 +200,11 @@ class GameController( object ):
                         ball_vel_x, ball_vel_y])
 
 
-    def get_reward(self, ballkicks):
+    def get_reward(self, ballkicks, max_frames, curr_frame):
         # get diagonal length
-        d = math.sqrt(self.game.pitch_w ** 2 + self.game.pitch_h ** 2)
-
         # count reward from player-to-ball distance
-        position_reward_player1 = (d - (self.player1.p - self.ball.p).length()) / d
-        position_reward_player2 = (d - (self.player2.p - self.ball.p).length()) / d
+        position_reward_player1 = (self.d - (self.player1.p - self.ball.p).length()) / self.d
+        position_reward_player2 = (self.d - (self.player2.p - self.ball.p).length()) / self.d
 
         # count reward from ball's velocity vector
         goal_left_angle = self.game.goal_left.get_angle(self.ball.p, self.ball.v)
@@ -211,24 +212,30 @@ class GameController( object ):
 
         if goal_left_angle == 1:
             ball_vec_reward_player1 = 1
-            ball_vec_reward_player2 = -1
+            ball_vec_reward_player2 = 0
         elif goal_right_angle == 1:
-            ball_vec_reward_player1 = -1
+            ball_vec_reward_player1 = 0
             ball_vec_reward_player2 = 1
         else:
             ball_vec_reward_player1 = 0
             ball_vec_reward_player2 = 0
 
         # count reward from ball-to-goal distance
-        goal_reward_player1 = (d - self.game.team_left.goal.get_dist(self.ball.p)) / d
-        goal_reward_player2 = (d - self.game.team_right.goal.get_dist(self.ball.p)) / d
+        goal_reward_player1 = (self.d - self.game.team_left.goal.get_dist(self.ball.p)) / self.d
+        goal_reward_player2 = (self.d - self.game.team_right.goal.get_dist(self.ball.p)) / self.d
 
         # count sum reward
-        reward_player1 = goal_reward_player1 * 0.3 + ball_vec_reward_player1 * 0.3 + position_reward_player1 * 0.2
-        reward_player2 = goal_reward_player2 * 0.3 + ball_vec_reward_player2 * 0.3 + position_reward_player2 * 0.2
+        # - curr_frame / (max_frames * 10)
+        reward_player1 = goal_reward_player1 * 0.6 + ball_vec_reward_player1 * 0.2 + position_reward_player1 * 0.2
+        reward_player2 = goal_reward_player2 * 0.6 + ball_vec_reward_player2 * 0.2 + position_reward_player2 * 0.2
 
         return [reward_player1, reward_player2]
 
+    def get_range(self, player_number, range_size):
+        if player_number == 1:
+            return int((self.player1.p - self.ball.p).length() / range_size)
+        elif player_number == 2:
+            return int((self.player2.p - self.ball.p).length() / range_size)
 
     def game_quit(self):
         self.game.quit()

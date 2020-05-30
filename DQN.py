@@ -10,15 +10,16 @@ import matplotlib.pyplot as plt
 
 class DQN:
 
-    def __init__(self, state_size, actions_number, batch_size, print_model, epsilon = 1, epsilon_decay = 0.9999, session = None):
+    def __init__(self, state_size, actions_number, batch_size, print_model, exploration_ranges = 1, epsilon = 1, epsilon_decay = 0.9999, session = None):
 
         self.input_count = state_size
         self.output_count = actions_number
-        self.epsilon = epsilon
-        self.epsilon_min_val = 0.1
+        # self.epsilon = epsilon
+        self.epsilon_ranges = [epsilon] * exploration_ranges
+        self.epsilon_min_val = 0.05
         self.epsilon_decay = epsilon_decay
         self.learning_rate = 0.0001
-        self.gamma = 0.99
+        self.gamma = 0.75
         self.batch_size = batch_size
         self.memory = Memory(max_size=100000, input_dims=state_size)
 
@@ -41,8 +42,10 @@ class DQN:
         model = tf.keras.Sequential()
         # model.add(tf.keras.layers.LeakyReLU(input_shape = (self.input_count,)))
         model.add(tf.keras.layers.Dense(32, input_dim = self.input_count, activation="tanh"))
-        model.add(tf.keras.layers.Dense(64, activation='relu'))
+        model.add(tf.keras.layers.Dense(256, activation='relu'))
+        model.add(tf.keras.layers.Dense(256, activation='relu'))
         model.add(tf.keras.layers.Dense(128, activation='relu'))
+        model.add(tf.keras.layers.Dense(64, activation='relu'))
         model.add(tf.keras.layers.Dense(self.output_count))
 
         model.compile(loss = tf.keras.losses.Huber(), optimizer=tf.keras.optimizers.Adam(lr = self.learning_rate))
@@ -86,8 +89,6 @@ class DQN:
             q_target[batch_index, actions] = rewards + (dones * 10) + self.gamma * q_next[batch_index, best_actions]
 
             loss = self.model.train_on_batch(states, q_target)
-            if self.epsilon > self.epsilon_min_val:
-                self.epsilon *= self.epsilon_decay
 
             return loss
         return None
@@ -98,7 +99,7 @@ class DQN:
 
         # save paramaters to .txt file
         file = open(filepath + str(epoch_number) + '/' + 'parameters' + str(epoch_number) + '.txt', 'w')
-        print('Epsilon:\t\t', self.epsilon,
+        print('Epsilon:\t\t', self.epsilon_ranges,
               '\nEpsilon decay:\t\t', self.epsilon_decay,
               '\nLearning rate:\t\t', self.learning_rate,
               '\nGamma:\t\t\t', self.gamma,
@@ -111,8 +112,10 @@ class DQN:
         file.close()
 
 
-    def make_move(self, state):
-        if random.random() < self.epsilon:
+    def make_move(self, state, exploration_range):
+        if random.random() < self.epsilon_ranges[exploration_range]:
+            if self.epsilon_ranges[exploration_range] > self.epsilon_min_val:
+                self.epsilon_ranges[exploration_range] *= self.epsilon_decay
             return random.randrange(self.output_count)  # make random move
         else:
             q_values = self.model.predict(state)  # calculate Q values for every possible move for current state using model
