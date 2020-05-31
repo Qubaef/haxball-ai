@@ -10,7 +10,9 @@ import matplotlib.pyplot as plt
 
 class DQN:
 
-    def __init__(self, state_size, actions_number, batch_size, print_model, exploration_ranges = 1, epsilon = 1, epsilon_decay = 0.9999, session = None):
+    def __init__(self, state_size, actions_number, batch_size, print_model, exploration_ranges=1, epsilon=1,
+                 epsilon_decay=0.9999, gamma=0.75, gamma_increase=0.05, gamma_limit=0.95, gamma_update_rate=1000,
+                 update_rate=400, session=None):
 
         self.input_count = state_size
         self.output_count = actions_number
@@ -19,10 +21,14 @@ class DQN:
         self.epsilon_min_val = 0.05
         self.epsilon_decay = epsilon_decay
         self.learning_rate = 0.00001
-        self.gamma = 0.75
+        self.gamma = gamma
+        self.gamma_increase = gamma_increase
+        self.gamma_update_rate = gamma_update_rate
+        self.gamma_limit = gamma_limit
         self.batch_size = batch_size
         self.memory = Memory(max_size=100000, input_dims=state_size)
 
+        self.update_rate = update_rate
         self.target_model = self.define_model(print_model, session)
         self.model = self.define_model(print_model, session)
 
@@ -33,7 +39,7 @@ class DQN:
         if session is None:
             config = tf.compat.v1.ConfigProto(gpu_options=tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.8))
             config.gpu_options.allow_growth = True
-            self.session = tf.compat.v1.Session(config= config)
+            self.session = tf.compat.v1.Session(config=config)
             tf.compat.v1.keras.backend.set_session(self.session)
 
         # probably speeds up prediction
@@ -41,14 +47,14 @@ class DQN:
 
         model = tf.keras.Sequential()
         # model.add(tf.keras.layers.LeakyReLU(input_shape = (self.input_count,)))
-        model.add(tf.keras.layers.Dense(32, input_dim = self.input_count, activation="tanh"))
+        model.add(tf.keras.layers.Dense(32, input_dim=self.input_count, activation="tanh"))
         model.add(tf.keras.layers.Dense(256, activation='relu'))
         model.add(tf.keras.layers.Dense(256, activation='relu'))
         model.add(tf.keras.layers.Dense(128, activation='relu'))
         model.add(tf.keras.layers.Dense(64, activation='relu'))
         model.add(tf.keras.layers.Dense(self.output_count))
 
-        model.compile(loss = tf.keras.losses.Huber(), optimizer=tf.keras.optimizers.Adam(lr = self.learning_rate))
+        model.compile(loss=tf.keras.losses.Huber(), optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate))
 
         # save model as model.png
         # os.environ["PATH"] += os.pathsep + 'C:\Program Files (x86)\Graphviz2.38\bin\'
@@ -59,21 +65,20 @@ class DQN:
 
         return model
 
-
     def update_target_model(self):
         self.target_model.set_weights(self.model.get_weights())
-
 
     def save_weights(self, filename):
         self.model.save_weights(filename)
 
-
     def load_weights(self, filename):
         self.model.load_weights(filename).expect_partial()
 
-
     # learn model from given batch
     def learn(self):
+        if self.memory.mem_count % self.update_rate == 0:
+            self.update_target_model()
+
         if not self.memory.mem_count < self.batch_size:
             states, next_states, rewards, actions, dones = self.memory.sample_batch(self.batch_size)
 
@@ -86,7 +91,8 @@ class DQN:
 
             batch_index = np.arange(self.batch_size, dtype=np.int32)
 
-            q_target[batch_index, actions] = rewards + (dones * 10) + self.gamma * q_next[batch_index, best_actions]
+            q_target[batch_index, actions] = (abs(dones) + 1) % 2 * rewards + (dones * 10) + (
+                        1 - abs(dones)) * self.gamma * q_next[batch_index, best_actions]
 
             loss = self.model.train_on_batch(states, q_target)
 
@@ -118,5 +124,20 @@ class DQN:
                 self.epsilon_ranges[exploration_range] *= self.epsilon_decay
             return random.randrange(self.output_count)  # make random move
         else:
-            q_values = self.model.predict(state)  # calculate Q values for every possible move for current state using model
+            q_values = self.model.predict(
+                state)  # calculate Q values for every possible move for current state using model
             return np.argmax(q_values)
+
+    def weak_move(self, state, exploration_range):
+        if random.random() < self.epsilon_ranges[exploration_range] * 1.20:
+            if self.epsilon_ranges[exploration_range] > self.epsilon_min_val:
+                self.epsilon_ranges[exploration_range] *= self.epsilon_decay
+            return random.randrange(self.output_count)  # make random move
+        else:
+            q_values = self.target_model.predict(
+                state)  # calculate Q values for every possible move for current state using model
+            return np.argmax(q_values)
+
+    def increase_gamma(self):
+        if self.gamma <= self.gamma_limit:
+            self.gamma += self.gamma_increase

@@ -14,9 +14,9 @@ class Stats( object ):
         self.games_per_epoch = games_per_epoch
         self.batch_size = batch_size
 
-        self.avg_reward_story_1 = col.deque(maxlen = games_per_epoch)
-        self.avg_reward_story_2 = col.deque(maxlen = games_per_epoch)
-        self.loss_story = col.deque(maxlen = frames_per_game * games_per_epoch)
+        self.avg_reward_story_1 = col.deque(maxlen = 10000000)
+        self.avg_reward_story_2 = col.deque(maxlen = 10000000)
+        self.loss_story = col.deque(maxlen = 10000000)
 
         self.kicks_accuracy = 1000
         self.kicks_story = [0] * self.kicks_accuracy
@@ -27,15 +27,20 @@ class Stats( object ):
 
         # save avg reward
         plt.title("Średnia nagroda od numeru gry")
-        plt.plot(range(1, self.games_per_epoch + 1), self.avg_reward_story_1, 'b')
-        plt.plot(range(1, self.games_per_epoch + 1), self.avg_reward_story_2, 'r')
-        plt.plot([1, self.games_per_epoch + 1], [0, 0], 'y')
+        plt.subplot(2, 1, 1)
+        plt.plot(range(1, len(self.avg_reward_story_1) + 1), self.avg_reward_story_1, 'b.', markersize=3)
+        plt.plot([1, len(self.avg_reward_story_2) + 1], [0, 0], 'y')
+        plt.subplot(2, 1, 2)
+        plt.plot(range(1, len(self.avg_reward_story_2) + 1), self.avg_reward_story_2, 'r.', markersize=3)
+        plt.plot([1, len(self.avg_reward_story_2) + 1], [0, 0], 'y')
         plt.savefig(self.filepath + 'average_reward_' + str(self.epoch_number) + '.png')
         plt.clf()
 
         # save loss
         plt.title("Strata od numeru uczenia")
         plt.plot(range(1, len(self.loss_story) + 1), self.loss_story, 'b')
+        plt.yscale('log')
+        plt.grid()
         plt.savefig(self.filepath + 'loss_' + str(self.epoch_number) + '.png')
         plt.clf()
 
@@ -49,9 +54,9 @@ class Stats( object ):
         self.save_model_func(40, self.results_foldername + '/', self.epoch_number, self.frames_per_game, self.games_per_epoch, self.batch_size)
 
         # clear all stored data
-        self.avg_reward_story_1.clear()
-        self.avg_reward_story_2.clear()
-        self.loss_story.clear()
+       # self.avg_reward_story_1.clear()
+        #self.avg_reward_story_2.clear()
+        #self.loss_story.clear()
         self.kicks_story = [0] * self.kicks_accuracy
 
         self.epoch_number += 1
