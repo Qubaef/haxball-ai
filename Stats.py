@@ -40,10 +40,10 @@ class Stats( object ):
         plt.clf()
 
         # save kicks to distance
-        # plt.title("Kopnięcia piłki od odległości gracza od piłki")
-        # plt.bar(np.arange(0, 1, 1 / self.kicks_accuracy), self.kicks_story, width = 1 / self.kicks_accuracy, color = 'b')
-        # plt.savefig(self.filepath + 'kicks_' + str(self.epoch_number) + '.png')
-        # plt.clf()
+        plt.title("Kopnięcia piłki od odległości gracza od piłki")
+        plt.bar(np.arange(0, 1, 1 / self.kicks_accuracy), self.kicks_story, width = 1 / self.kicks_accuracy, color = 'b')
+        plt.savefig(self.filepath + 'kicks_' + str(self.epoch_number) + '.png')
+        plt.clf()
 
         # save model as txt file
         self.save_model_func(40, self.results_foldername + '/', self.epoch_number, self.frames_per_game, self.games_per_epoch, self.batch_size)

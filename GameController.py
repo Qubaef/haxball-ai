@@ -33,6 +33,8 @@ class GameController( object ):
         self.player1_target_goal = self.game.team_left.goal.x
         self.player2_target_goal = self.game.team_right.goal.x
 
+        self.kick_power = 50
+
 
         # movement options
         # 1 = v(-1,-1) # 2 = v( 0,-1) # 3 = v( 1, -1)
@@ -66,10 +68,9 @@ class GameController( object ):
         self.states_translation_array_2[7] = pygame.math.Vector2(0, -1).normalize()
         self.states_translation_array_2[8] = pygame.math.Vector2(-1, -1).normalize()
 
-        self.possible_inputs = list(itertools.product(range(9)))
-        # self.possible_inputs = list(itertools.product(range(9), range(7)))
-        # self.not_possible_inputs = list(itertools.product([0], range(1,7)))
-        # self.possible_inputs = [item for item in self.possible_inputs if item not in self.not_possible_inputs]
+        self.possible_inputs = list(itertools.product(range(9), range(3)))
+        self.not_possible_inputs = list(itertools.product([0], range(1,3)))
+        self.possible_inputs = [item for item in self.possible_inputs if item not in self.not_possible_inputs]
         
 
     def next_frame(self, input_player1, input_player2, max_frames, curr_frame):
@@ -85,18 +86,17 @@ class GameController( object ):
         self.player2.velocity_add(self.states_translation_array_2[self.possible_inputs[input_player2][0]])
 
         # kick the ball
-        # kick_stats = [None, None]
-        # d = math.sqrt(self.game.pitch_w ** 2 + self.game.pitch_h ** 2)
-        # 
+        kick_stats = [None, None]
+
         ballkick_player1 = 0
-        # if self.possible_inputs[input_player1][1] != 0:
-        #     kick_stats[0] = (self.player1.p - self.ball.p).length() / d
-        #     ballkick_player1 = self.player1.kick(self.ball.p + self.states_translation_array[self.possible_inputs[input_player1][0]] * 30 * self.possible_inputs[input_player1][1])
-        # 
+        if self.possible_inputs[input_player1][1] != 0:
+             kick_stats[0] = (self.player1.p - self.ball.p).length() / self.d
+             ballkick_player1 = self.player1.kick(self.ball.p + self.states_translation_array_1[self.possible_inputs[input_player1][0]] * self.kick_power * self.possible_inputs[input_player1][1])
+
         ballkick_player2 = 0
-        # if self.possible_inputs[input_player2][1] != 0:
-        #     kick_stats[1] = (self.player2.p - self.ball.p).length() / d
-        #     ballkick_player2 = self.player2.kick(self.ball.p + self.states_translation_array[self.possible_inputs[input_player2][0]] * 30 * self.possible_inputs[input_player2][1])
+        if self.possible_inputs[input_player2][1] != 0:
+            kick_stats[1] = (self.player2.p - self.ball.p).length() / self.d
+            ballkick_player2 = self.player2.kick(self.ball.p + self.states_translation_array_2[self.possible_inputs[input_player2][0]] * self.kick_power * self.possible_inputs[input_player2][1])
 
 
         # manage inputs(for debug and to avoid "not responding" communicate)
@@ -125,7 +125,7 @@ class GameController( object ):
         self.game.redraw()
 
         # return rendered state pack
-        return self.get_reward((ballkick_player1, ballkick_player2), max_frames, curr_frame), self.game.is_done()
+        return self.get_reward((ballkick_player1, ballkick_player2), max_frames, curr_frame), self.game.is_done(), kick_stats
 
 
     def get_action_length(self):
@@ -226,8 +226,8 @@ class GameController( object ):
 
         # count sum reward
         # - curr_frame / (max_frames * 10)
-        reward_player1 = goal_reward_player1 * 0.6 + ball_vec_reward_player1 * 0.2 + position_reward_player1 * 0.2
-        reward_player2 = goal_reward_player2 * 0.6 + ball_vec_reward_player2 * 0.2 + position_reward_player2 * 0.2
+        reward_player1 = goal_reward_player1 * 0.6 + ball_vec_reward_player1 * 0.2 + position_reward_player1 * 0.2 + ballkicks[0] * 0.1
+        reward_player2 = goal_reward_player2 * 0.6 + ball_vec_reward_player2 * 0.2 + position_reward_player2 * 0.2 + ballkicks[0] * 0.1
 
         return [reward_player1, reward_player2]
 

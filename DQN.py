@@ -18,7 +18,7 @@ class DQN:
         self.epsilon_ranges = [epsilon] * exploration_ranges
         self.epsilon_min_val = 0.05
         self.epsilon_decay = epsilon_decay
-        self.learning_rate = 0.0001
+        self.learning_rate = 0.00001
         self.gamma = 0.75
         self.batch_size = batch_size
         self.memory = Memory(max_size=100000, input_dims=state_size)
