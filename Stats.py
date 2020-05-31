@@ -27,8 +27,11 @@ class Stats( object ):
 
         # save avg reward
         plt.title("Średnia nagroda od numeru gry")
-        plt.plot(range(1, len(self.avg_reward_story_1) + 1), self.avg_reward_story_1, 'b.')
-        plt.plot(range(1, len(self.avg_reward_story_2) + 1), self.avg_reward_story_2, 'r.')
+        plt.subplot(2, 1, 1)
+        plt.plot(range(1, len(self.avg_reward_story_1) + 1), self.avg_reward_story_1, 'b.', markersize=3)
+        plt.plot([1, len(self.avg_reward_story_2) + 1], [0, 0], 'y')
+        plt.subplot(2, 1, 2)
+        plt.plot(range(1, len(self.avg_reward_story_2) + 1), self.avg_reward_story_2, 'r.', markersize=3)
         plt.plot([1, len(self.avg_reward_story_2) + 1], [0, 0], 'y')
         plt.savefig(self.filepath + 'average_reward_' + str(self.epoch_number) + '.png')
         plt.clf()
