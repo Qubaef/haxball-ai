@@ -6,6 +6,7 @@ from DQN import DQN
 from Stats import Stats
 from tqdm import tqdm
 
+
 # FUNCTIONS
 
 # play given amount of games
@@ -14,7 +15,7 @@ def play_games(games_number, frames_per_game, display_mode):
 
         # Reset enviroment
         env.game.game_reset()
-        
+
         # Get players states
         state_player1 = env.get_state_1()
         state_player2 = env.get_state_2()
@@ -23,19 +24,23 @@ def play_games(games_number, frames_per_game, display_mode):
         average_reward_1 = 0
         average_reward_2 = 0
         flag = 1
-        start_reward_1=0
-        start_reward_2=0
+        start_reward_1 = 0
+        start_reward_2 = 0
 
         for frame in range(frames_per_game):
-      
+
             # Make actions depending on states (basing on network's copy)
             if game % 2:
-                action_player1 = dqn_learn.make_move(np.reshape(state_player1, [1, len(state_player1)]), env.get_range(1, exp_range_size))
-                action_player2 = dqn_learn.weak_move(np.reshape(state_player2, [1, len(state_player2)]), env.get_range(2, exp_range_size))
+                action_player1 = dqn_learn.make_move(np.reshape(state_player1, [1, len(state_player1)]),
+                                                     env.get_range(1, exp_range_size))
+                action_player2 = dqn_learn.weak_move(np.reshape(state_player2, [1, len(state_player2)]),
+                                                     env.get_range(2, exp_range_size))
             else:
-                action_player1 = dqn_learn.weak_move(np.reshape(state_player1, [1, len(state_player1)]), env.get_range(1, exp_range_size))
-                action_player2 = dqn_learn.make_move(np.reshape(state_player2, [1, len(state_player2)]), env.get_range(2, exp_range_size))
-    
+                action_player1 = dqn_learn.weak_move(np.reshape(state_player1, [1, len(state_player1)]),
+                                                     env.get_range(1, exp_range_size))
+                action_player2 = dqn_learn.make_move(np.reshape(state_player2, [1, len(state_player2)]),
+                                                     env.get_range(2, exp_range_size))
+
             # simulate frame
             reward, done = env.next_frame(action_player1, action_player2, frames_per_game, frame)
             if flag:
@@ -43,25 +48,25 @@ def play_games(games_number, frames_per_game, display_mode):
                 start_reward_2 = reward[1]
                 flag = 0
             # count average reward
-            if(save_charts == 1):
+            if (save_charts == 1):
                 average_reward_1 += reward[0] / frames_per_game
                 average_reward_2 += reward[1] / frames_per_game
-      
+
             # get players states
             next_state_player1 = env.get_state_1()
             next_state_player2 = env.get_state_2()
-    
+
             # memorize frames in dqn_learn
             dqn_learn.memory.remember(state_player1, action_player1, reward[0], next_state_player1, done)
             dqn_learn.memory.remember(state_player2, action_player2, reward[1], next_state_player2, -done)
-    
+
             # overwrite state of the players
             state_player1 = next_state_player1
             state_player2 = next_state_player2
 
             # Learn from saved memory and save loss to plot
             if save_charts == 1:
-                 stats.memorize_loss(dqn_learn.learn())
+                stats.memorize_loss(dqn_learn.learn())
             # else:
             #     dqn_learn.learn()
 
@@ -69,9 +74,9 @@ def play_games(games_number, frames_per_game, display_mode):
                 break
 
         # save average reward for this game
-        if(save_charts == 1):
+        if (save_charts == 1):
             stats.memorize_avg_reward(average_reward_1 - start_reward_1, average_reward_2 - start_reward_2)
-        
+
 
 # Set to gpu
 # If you dont have nvidia gpu, comment lines below
@@ -86,9 +91,9 @@ plots_foldername = "plots"
 
 # create folders
 if not os.path.exists(results_foldername):
-   os.makedirs(results_foldername)
+    os.makedirs(results_foldername)
 if not os.path.exists(results_foldername + '/' + plots_foldername + '/'):
-   os.makedirs(results_foldername + '/' + plots_foldername + '/')
+    os.makedirs(results_foldername + '/' + plots_foldername + '/')
 
 # weights filename
 filename_dqn = "weights"
@@ -121,18 +126,19 @@ games_per_epoch = 60
 frames_per_game = 400
 
 # learn batch size
-batch_size = int(64)
+batch_size = int(32)
 
 # gamma settings
 gamma = 0
 gamma_increase = 0.05
-gamma_update_rate = games_per_epoch*frames_per_game
+gamma_limit = 0.95
+gamma_update_rate = games_per_epoch * frames_per_game
 
 # epsilon settings
 epsilon = 1
 epsilon_decay = 0.9999
 
-#target network update rate
+# target network update rate
 update_rate = 2400
 
 # Load enviroment
@@ -142,16 +148,17 @@ env = GameController(display_mode)
 exp_range_size = 800
 exploration_ranges = int(env.d / exp_range_size + 1)
 
-
 # Initalize dqn
-dqn_learn = DQN(env.get_state_length(), env.get_action_length(), batch_size, 1, exploration_ranges=exploration_ranges, epsilon=epsilon, epsilon_decay=epsilon_decay, gamma = gamma, update_rate=update_rate)
-if(load_model == 1):
+dqn_learn = DQN(env.get_state_length(), env.get_action_length(), batch_size, 1, exploration_ranges=exploration_ranges,
+                epsilon=epsilon, epsilon_decay=epsilon_decay, gamma=gamma, gamma_increase=gamma_increase,
+                gamma_limit=gamma_limit, gamma_update_rate=gamma_update_rate, update_rate=update_rate)
+if load_model == 1:
     dqn_learn.load_weights(results_foldername + '/' + filename_dqn)
 
 # Stats object to store data to plot
 if save_charts == 1:
-    stats = Stats(results_foldername, plots_foldername, frames_per_game, batch_size, games_per_epoch, dqn_learn.save_model)
-
+    stats = Stats(results_foldername, plots_foldername, frames_per_game, batch_size, games_per_epoch,
+                  dqn_learn.save_model)
 
 # Learn main loop
 for epoch in range(epochs_number):
@@ -173,8 +180,8 @@ for epoch in range(epochs_number):
     end_time = time.time()
     print(games_per_epoch, "games of", frames_per_game, "frames simulated in", end_time - start_time, "seconds")
     # Save weights
-    if(save_model == 1):
+    if (save_model == 1):
         dqn_learn.save_weights(results_foldername + '/' + str(epoch) + '/' + filename_dqn)
 
-    if  dqn_learn.gamma <= 0.95:
-        dqn_learn.gamma += 0.05
+    # Increase gamma
+    dqn_learn.increase_gamma()
