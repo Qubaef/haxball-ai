@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 class DQN:
 
-    def __init__(self, state_size, actions_number, batch_size, print_model, exploration_ranges = 1, epsilon = 1, epsilon_decay = 0.9999, session = None):
+    def __init__(self, state_size, actions_number, batch_size, print_model, exploration_ranges = 1, epsilon = 1, epsilon_decay = 0.9999, gamma = 0.75, update_rate = 400, session = None):
 
         self.input_count = state_size
         self.output_count = actions_number
@@ -19,10 +19,11 @@ class DQN:
         self.epsilon_min_val = 0.05
         self.epsilon_decay = epsilon_decay
         self.learning_rate = 0.0001
-        self.gamma = 0.75
+        self.gamma = gamma
         self.batch_size = batch_size
         self.memory = Memory(max_size=100000, input_dims=state_size)
 
+        self.update_rate = update_rate
         self.target_model = self.define_model(print_model, session)
         self.model = self.define_model(print_model, session)
 
@@ -74,6 +75,9 @@ class DQN:
 
     # learn model from given batch
     def learn(self):
+        if self.memory.mem_count % self.update_rate == 0:
+            self.update_target_model()
+
         if not self.memory.mem_count < self.batch_size:
             states, next_states, rewards, actions, dones = self.memory.sample_batch(self.batch_size)
 
@@ -86,7 +90,7 @@ class DQN:
 
             batch_index = np.arange(self.batch_size, dtype=np.int32)
 
-            q_target[batch_index, actions] = rewards + (dones * 10) + self.gamma * q_next[batch_index, best_actions]
+            q_target[batch_index, actions] = (abs(dones) + 1) % 2 * rewards + (dones * 10) + (1 - abs(dones)) * self.gamma * q_next[batch_index, best_actions]
 
             loss = self.model.train_on_batch(states, q_target)
 
@@ -119,4 +123,13 @@ class DQN:
             return random.randrange(self.output_count)  # make random move
         else:
             q_values = self.model.predict(state)  # calculate Q values for every possible move for current state using model
+            return np.argmax(q_values)
+
+    def weak_move(self, state, exploration_range):
+        if random.random() < self.epsilon_ranges[exploration_range]*1.20:
+            if self.epsilon_ranges[exploration_range] > self.epsilon_min_val:
+                self.epsilon_ranges[exploration_range] *= self.epsilon_decay
+            return random.randrange(self.output_count)  # make random move
+        else:
+            q_values = self.target_model.predict(state)  # calculate Q values for every possible move for current state using model
             return np.argmax(q_values)

@@ -12,9 +12,6 @@ from tqdm import tqdm
 def play_games(games_number, frames_per_game, display_mode):
     for game in tqdm(range(games_number)):
 
-        # Update target model weights
-        dqn_learn.update_target_model()
-
         # Reset enviroment
         env.game.game_reset()
         
@@ -32,8 +29,12 @@ def play_games(games_number, frames_per_game, display_mode):
         for frame in range(frames_per_game):
       
             # Make actions depending on states (basing on network's copy)
-            action_player1 = dqn_learn.make_move(np.reshape(state_player1, [1, len(state_player1)]), env.get_range(1, exp_range_size))
-            action_player2 = dqn_learn.make_move(np.reshape(state_player2, [1, len(state_player2)]), env.get_range(2, exp_range_size))
+            if game % 2:
+                action_player1 = dqn_learn.make_move(np.reshape(state_player1, [1, len(state_player1)]), env.get_range(1, exp_range_size))
+                action_player2 = dqn_learn.weak_move(np.reshape(state_player2, [1, len(state_player2)]), env.get_range(2, exp_range_size))
+            else:
+                action_player1 = dqn_learn.weak_move(np.reshape(state_player1, [1, len(state_player1)]), env.get_range(1, exp_range_size))
+                action_player2 = dqn_learn.make_move(np.reshape(state_player2, [1, len(state_player2)]), env.get_range(2, exp_range_size))
     
             # simulate frame
             reward, done = env.next_frame(action_player1, action_player2, frames_per_game, frame)
@@ -99,36 +100,40 @@ filename_copy = "copy"
 # displayMode = 1 - display game
 # displayMode = 2 - display game; control one player with mouse; LPM displays reward for his current state
 # displayMode = 3 - same as 1, but display plots
-display_mode = 2
-
+# _____________
 # load_model = 0 - initailize new model with random weights
 # load_model = 1 - load model from file
-load_model = 1
-
+# _____________
 # save_model = 0 - don't save learned model after every epoch
 # save_model = 1 - save learned model afetr every epoch (will overwrite previously saved model)
-save_model = 0
-
+# _____________
 # save_charts = 0 - don't save charts
 # save_charts = 1 - save charts after every epoch
-save_charts = 0
 
-# Number of epochs
+display_mode = 0
+load_model = 0
+save_model = 1
+save_charts = 1
+
+# Number of epochs, Number of games per epoch, Number of frames per game (frames_per_game / 60 = seconds in display mode)
 epochs_number = 1000
-
-# Number of games per epoch
 games_per_epoch = 60
-
-# Number of frames per game (frames_per_game / 60 = seconds in display mode)
-frames_per_game = 4000
+frames_per_game = 400
 
 # learn batch size
-batch_size = int(128)
+batch_size = int(64)
 
-# epsilon
-epsilon = 0
-# epsilon decay
-epsilon_decay = 0.99999
+# gamma settings
+gamma = 0
+gamma_increase = 0.05
+gamma_update_rate = games_per_epoch*frames_per_game
+
+# epsilon settings
+epsilon = 1
+epsilon_decay = 0.9999
+
+#target network update rate
+update_rate = 2400
 
 # Load enviroment
 env = GameController(display_mode)
@@ -139,7 +144,7 @@ exploration_ranges = int(env.d / exp_range_size + 1)
 
 
 # Initalize dqn
-dqn_learn = DQN(env.get_state_length(), env.get_action_length(), batch_size, 1, exploration_ranges=exploration_ranges, epsilon=epsilon, epsilon_decay=epsilon_decay)
+dqn_learn = DQN(env.get_state_length(), env.get_action_length(), batch_size, 1, exploration_ranges=exploration_ranges, epsilon=epsilon, epsilon_decay=epsilon_decay, gamma = gamma, update_rate=update_rate)
 if(load_model == 1):
     dqn_learn.load_weights(results_foldername + '/' + filename_dqn)
 
@@ -150,7 +155,7 @@ if save_charts == 1:
 
 # Learn main loop
 for epoch in range(epochs_number):
-    print("Epoch:", epoch, "epsilon:", dqn_learn.epsilon_ranges)
+    print("Epoch:", epoch, "epsilon:", dqn_learn.epsilon_ranges, "gamma:", dqn_learn.gamma)
 
     if save_model == 1 or save_charts == 1:
         if not os.path.exists(results_foldername + '/' + str(epoch)):
@@ -170,3 +175,6 @@ for epoch in range(epochs_number):
     # Save weights
     if(save_model == 1):
         dqn_learn.save_weights(results_foldername + '/' + str(epoch) + '/' + filename_dqn)
+
+    if  dqn_learn.gamma <= 0.95:
+        dqn_learn.gamma += 0.05
