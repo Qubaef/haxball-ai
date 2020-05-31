@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 class DQN:
 
     def __init__(self, state_size, actions_number, batch_size, print_model, exploration_ranges=1, epsilon=1,
-                 epsilon_decay=0.9999, gamma=0.75, gamma_increse=0.05, gamma_limit=0.95, gamma_update_rate=1000,
+                 epsilon_decay=0.9999, gamma=0.75, gamma_increase=0.05, gamma_limit=0.95, gamma_update_rate=1000,
                  update_rate=400, session=None):
 
         self.input_count = state_size
@@ -22,7 +22,7 @@ class DQN:
         self.epsilon_decay = epsilon_decay
         self.learning_rate = 0.0001
         self.gamma = gamma
-        self.gamma_increase = gamma_increse
+        self.gamma_increase = gamma_increase
         self.gamma_update_rate = gamma_update_rate
         self.gamma_limit = gamma_limit
         self.batch_size = batch_size
