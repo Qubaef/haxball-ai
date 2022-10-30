@@ -1,10 +1,11 @@
 import pygame
 import math
-from Ball import Ball
-from CirclePhysical import CirclePhysical
+from HaxballEngine.Ball import Ball
+from HaxballEngine.CirclePhysical import CirclePhysical
 
-class Player( CirclePhysical ):
-    # Object containing player's mathods
+
+class Player(CirclePhysical):
+    # Object containing player's methods
 
     def __init__(self, game, px, py, number, color):
         super().__init__(game, px, py, number, 1, 15, color)
@@ -27,4 +28,3 @@ class Player( CirclePhysical ):
         # bring back normal mode
         self.ball_control = 1.0
         self.v_max = 6 / math.pow(self.weight, 2 / 3)
-

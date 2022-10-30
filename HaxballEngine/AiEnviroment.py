@@ -14,7 +14,5 @@ input_player2[1] = 0
 input_player2[2] = 0
 input_player2[3] = 0
 
-
-while(True):
+while (True):
     env.next_frame(input_player1, input_player2)
-

@@ -1,7 +1,8 @@
-from Post import Post
-from Collision import Collision
+from HaxballEngine.Post import Post
+from HaxballEngine.Collision import Collision
 
-class Goal( object ):
+
+class Goal:
     def __init__(self, game, color, p_post_x, p_post_y_up, p_post_y_down, width, direction):
         self.game = game
         self.color = color
@@ -18,7 +19,7 @@ class Goal( object ):
     def goal_collide(self):
         Collision.collide(self.post_up)
         Collision.collide(self.post_down)
-        
+
     def get_px(self):
         return self.x + self.direction * self.width
 

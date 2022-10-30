@@ -1,4 +1,7 @@
-class Team( object ):
+from HaxballEngine.Properties import InternalProperties
+
+
+class Team(object):
 
     def __init__(self, game, color, goal, pitch_half):
         self.game = game
@@ -26,8 +29,8 @@ class Team( object ):
 
     def reset_positions(self):
         i = 1
-        for obj in self.players:
-            pos_x = obj.game.screen_w / 2 + self.pitch_half * obj.game.pitch_w / 4
-            pos_y = (obj.game.screen_h - obj.game.pitch_h) / 2 + i * obj.game.pitch_h / 4
-            obj.set_move((0,0), (pos_x, pos_y))
+        for player in self.players:
+            pos_x = InternalProperties.SCREEN_WIDTH / 2 + self.pitch_half * InternalProperties.PITCH_WIDTH / 4
+            pos_y = (InternalProperties.SCREEN_HEIGHT - InternalProperties.PITCH_HEIGHT) / 2 + i * InternalProperties.PITCH_HEIGHT / 4
+            player.set_move((0, 0), (pos_x, pos_y))
             i += 1
