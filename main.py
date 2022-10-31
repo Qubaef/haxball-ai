@@ -11,7 +11,7 @@ from InputManager import InputManager
 
 
 def startUserGameplay():
-    agentsInTeam: int = 3
+    agentsInTeam: int = 11
 
     # Initialize game
     gameController: GameController = GameController(agentsInTeam)
@@ -20,28 +20,33 @@ def startUserGameplay():
     agentsInputs: List[AgentInput] = [AgentInput() for _ in range(agentsInTeam * 2)]
 
     shouldClose = False
+    framesToPlay: int = 3600
 
     # DataStory
-    dataStory: DataStory = DataStory("dataStory", 10000)
+    dataStory: DataStory = DataStory("dataStory")
     frameId: int = 0
 
     # Main loop of the game
     while not shouldClose:
         # Move every player towards the ball
-        ballPos = gameController.ball.p
+        ballPos = gameController.engine.balls[0].p
         for i in range(len(agentsInputs)):
             agentsInputs[i].movementDirection = ballPos - gameController.engine.agents[i].p
 
-        dataStory.storeVal("ballPosX", frameId,  ballPos[0])
+        # dataStory.storeVal("ballPos", frameId,  [ballPos[0], ballPos[1]])
 
-        if frameId % 10000 == 0:
-            dataStory.plot()
+        # if frameId % 100 == 0:
+        #     dataStory.plot()
 
         # Update game state
-        shouldClose = InputManager.parseUserInputs(agentsInputs[0])
+        shouldClose = InputManager.parseUserInputs(gameController, agentsInputs[0])
+        # gameController.engine.balls[0].set_move((0, 0), pygame.mouse.get_pos())
 
         gameController.nextFrame(agentsInputs)
         frameId += 1
+
+        if frameId > framesToPlay:
+            shouldClose = True
 
 
 if __name__ == "__main__":

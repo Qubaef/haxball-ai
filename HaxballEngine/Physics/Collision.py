@@ -87,7 +87,7 @@ class Collision:
         if isinstance(obj, Agent):
             # Left wall
             if obj.p.x < int(obj.size + (InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH) / 2):
-                if game.pitch.goalLeft.post_down.p.y > obj.p.y > game.pitch.goalLeft.post_up.p.y:
+                if game.pitch.goalLeft.postDown.p.y > obj.p.y > game.pitch.goalLeft.postUp.p.y:
                     if obj.p.x < game.pitch.goalLeft.x:
                         obj.set_p(game.pitch.goalLeft.x, obj.p.y)
                         obj.v *= 0
@@ -97,7 +97,7 @@ class Collision:
 
             # Right wall
             if obj.p.x > int(InternalProperties.PITCH_WIDTH + ((InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH) / 2) - obj.size):
-                if game.pitch.goalRight.post_down.p.y > obj.p.y > game.pitch.goalRight.post_up.p.y:
+                if game.pitch.goalRight.postDown.p.y > obj.p.y > game.pitch.goalRight.postUp.p.y:
                     if obj.p.x > game.pitch.goalRight.x:
                         obj.set_p(game.pitch.goalRight.x, obj.p.y)
                         obj.v *= 0
@@ -108,7 +108,7 @@ class Collision:
         elif isinstance(obj, Ball):
             # Left wall
             if obj.p.x < int(obj.size + (InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH) / 2):
-                if game.pitch.goalLeft.post_down.p.y > obj.p.y > game.pitch.goalLeft.post_up.p.y:
+                if game.pitch.goalLeft.postDown.p.y > obj.p.y > game.pitch.goalLeft.postUp.p.y:
                     if obj.p.x < game.pitch.goalLeft.x - obj.size:
                         game.goalScored(game.pitch.goalLeft)
                 else:
@@ -117,7 +117,7 @@ class Collision:
 
             # Right wall
             if obj.p.x > int(InternalProperties.PITCH_WIDTH + ((InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH) / 2) - obj.size):
-                if game.pitch.goalRight.post_down.p.y > obj.p.y > game.pitch.goalRight.post_up.p.y:
+                if game.pitch.goalRight.postDown.p.y > obj.p.y > game.pitch.goalRight.postUp.p.y:
                     if obj.p.x > game.pitch.goalRight.x + obj.size:
                         game.goalScored(game.pitch.goalRight)
                 else:

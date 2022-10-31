@@ -11,15 +11,14 @@ from HaxballEngine.Properties import InternalProperties
 class GameController(object):
 
     def __init__(self, playersInTeam: int):
-        # initialize game, ball, and player
+        # Initialize game, ball, and players
         self.engine = GameEngine()
 
-        self.ball = Ball(self.engine, 500, 300, 0)
-        self.engine.addBall(self.ball)
+        self.engine.addBall()
 
         for i in range(playersInTeam):
-            self.engine.addAgent(Agent(self.engine, 100 + i * 50, 100, i, 0), InternalProperties.TEAM_1_ID)
-            self.engine.addAgent(Agent(self.engine, 100 + i * 50, 500, i, 1), InternalProperties.TEAM_2_ID)
+            self.engine.addAgent(InternalProperties.TEAM_1_ID)
+            self.engine.addAgent(InternalProperties.TEAM_2_ID)
 
     def nextFrame(self, inputs: List[AgentInput]):
         assert len(inputs) == len(self.engine.agents)
@@ -33,22 +32,6 @@ class GameController(object):
         for i in range(len(inputs)):
             if inputs[i].kick > 0:
                 self.engine.agents[i].kick(inputs[i].kickPos)
-
-        # self.player1.mode_normal()
-
-        # # set ball control
-        # if input_player1[1] == 0:
-        #     self.player1.mode_normal()
-        # else:
-        #     self.player1.mode_ball_control()
-
-        # if input_player2[1] == 0:
-        #     self.player2.mode_normal()
-        # else:
-        #     self.player2.mode_ball_control()
-
-        # if input_player1[2] == 1:
-        #     # self.player2.kick(input_player2[3])
 
         # Render next frame
         self.engine.update()

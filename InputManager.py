@@ -1,8 +1,9 @@
 import pygame
 from pygame.locals import *
 
+from GameController import GameController
 from HaxballEngine.AgentInput import AgentInput
-from HaxballEngine.Properties import Properties
+from HaxballEngine.Properties import Properties, InternalProperties
 
 
 class InputManager:
@@ -13,10 +14,12 @@ class InputManager:
     KEY_LEFT = K_a
     KEY_RIGHT = K_d
 
+    KEY_RESET_BALL = K_r
+
     KEY_TEST_MODE = K_t
 
     @staticmethod
-    def parseUserInputs(userInput: AgentInput) -> bool:
+    def parseUserInputs(gameController: GameController, userInput: AgentInput) -> bool:
         """
         Parses user inputs and returns true if the game should be closed.
         """
@@ -31,9 +34,9 @@ class InputManager:
             elif event.type == pygame.KEYDOWN:
                 if event.key == InputManager.KEY_TEST_MODE:
                     Properties.DEBUG_MODE = not Properties.DEBUG_MODE
-            # elif event.type == pygame.KEYUP:
-            #     if event.key == pygame.K_SPACE:
-            #         player.mode_normal()
+                if event.key == InputManager.KEY_RESET_BALL:
+                    gameController.engine.balls[0].set_move((0, 0),
+                        (InternalProperties.PITCH_CENTER[0], InternalProperties.PITCH_CENTER[1]))
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 userInput.kick = True
                 userInput.kickPos = pygame.Vector2(pygame.mouse.get_pos())

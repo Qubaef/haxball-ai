@@ -1,23 +1,26 @@
 import os
-from collections import deque
-from typing import Dict, Deque, Tuple
+from typing import Dict, Tuple, List
 import matplotlib.pyplot as plt
 import numpy as np
 
 
 class DataStory(object):
-    def __init__(self, outputDir: str, maxLen: int):
+    def __init__(self, outputDir: str):
         self.outputDir: str = outputDir
-        self.maxLen: int = maxLen
 
-        self.valuesDict: Dict[str, Tuple[Deque, Deque]] = {}
+        self.valuesDict: Dict[str, List[List, List[List]]] = {}
 
-    def storeVal(self, name: str, xVal: float, yVal: float):
+    def storeVal(self, name: str, xVal: float, yVals: List[float]):
         if name not in self.valuesDict:
-            self.valuesDict[name] = (deque(maxlen=self.maxLen), deque(maxlen=self.maxLen))
+            self.valuesDict[name] = []
+            self.valuesDict[name].append([])
+            self.valuesDict[name].append([[] for _ in range(len(yVals))])
+
+        assert len(yVals) == len(self.valuesDict[name][1])
 
         self.valuesDict[name][0].append(xVal)
-        self.valuesDict[name][1].append(yVal)
+        for i in range(len(yVals)):
+            self.valuesDict[name][1][i].append(yVals[i])
 
     def plot(self, show: bool = True, storeToPng: bool = False, clearAfterPlot: bool = False):
         # Create output directory if it doesn't exist
@@ -25,9 +28,10 @@ class DataStory(object):
             os.makedirs(self.outputDir)
 
         for name, values in self.valuesDict.items():
-            # Create new named figure
-            plt.plot(values[0], values[1], label=name)
-            plt.legend()
+            plt.figure(name)
+            plt.title(name)
+            for i in range(len(values[1])):
+                plt.plot(values[0], values[1][i])
 
             if show:
                 plt.show()
@@ -38,4 +42,6 @@ class DataStory(object):
             plt.clf()
 
             if clearAfterPlot:
-                self.valuesDict[name] = (deque(maxlen=self.maxLen), deque(maxlen=self.maxLen))
+                self.valuesDict[name][0].clear()
+                for i in range(len(values[1])):
+                    self.valuesDict[name][1][i].clear()

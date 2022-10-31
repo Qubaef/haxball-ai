@@ -13,9 +13,6 @@ class Pitch:
     PITCH_MARGIN_X: int = int((InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH) / 2)
     PITCH_MARGIN_Y: int = int((InternalProperties.SCREEN_HEIGHT - InternalProperties.PITCH_HEIGHT) / 2)
 
-    PITCH_CENTER_X: int = int(InternalProperties.SCREEN_WIDTH / 2)
-    PITCH_CENTER_Y: int = int(InternalProperties.SCREEN_HEIGHT / 2)
-
     PITCH_FIELD_SEGMENTS: int = 10
     PITCH_FIELD_SEGMENT_WIDTH: int = InternalProperties.PITCH_WIDTH / PITCH_FIELD_SEGMENTS
 
@@ -34,24 +31,26 @@ class Pitch:
         self.engine = engine
 
         # Initialize goals
-        goalYTop: float = self.PITCH_MARGIN_X + InternalProperties.PITCH_HEIGHT * 6 / 16
-        goalYBot: float = self.PITCH_MARGIN_Y + InternalProperties.PITCH_HEIGHT * 10 / 16
+        goalYTop: int = int(self.PITCH_MARGIN_Y + InternalProperties.PITCH_HEIGHT * 6 / 16)
+        goalYBot: int = int(self.PITCH_MARGIN_Y + InternalProperties.PITCH_HEIGHT * 10 / 16)
 
         self.goals: Dict[TeamId, Goal] = {
             InternalProperties.TEAM_1_ID: Goal(self.engine, ColorPalette.TEAM_1,
                 self.PITCH_MARGIN_X,
-                goalYTop, goalYBot, 50, -1),
+                goalYTop, goalYBot, 50, InternalProperties.TEAM_1_DIR),
             InternalProperties.TEAM_2_ID: Goal(self.engine, ColorPalette.TEAM_2,
                 self.PITCH_MARGIN_X + InternalProperties.PITCH_WIDTH,
-                goalYTop, goalYBot, 50, 0)
+                goalYTop, goalYBot, 50, InternalProperties.TEAM_2_DIR)
         }
         self.goalLeft = self.goals[InternalProperties.TEAM_1_ID]
         self.goalRight = self.goals[InternalProperties.TEAM_2_ID]
 
         # Initialize teams
         self.teams: Dict[TeamId, Team] = {
-            InternalProperties.TEAM_1_ID: Team(self.engine, ColorPalette.TEAM_1, self.goalLeft, 1),
-            InternalProperties.TEAM_2_ID: Team(self.engine, ColorPalette.TEAM_2, self.goalRight, -1)
+            InternalProperties.TEAM_1_ID: Team(self.engine, ColorPalette.TEAM_1, self.goalLeft,
+                InternalProperties.TEAM_2_DIR),
+            InternalProperties.TEAM_2_ID: Team(self.engine, ColorPalette.TEAM_2, self.goalRight,
+                InternalProperties.TEAM_1_DIR)
         }
         self.teamLeft: Team = self.teams[InternalProperties.TEAM_1_ID]
         self.teamRight: Team = self.teams[InternalProperties.TEAM_2_ID]
@@ -86,7 +85,7 @@ class Pitch:
         # Middle line
         pygame.draw.rect(self.engine.screen, ColorPalette.BORDER,
             (
-                self.PITCH_CENTER_X - InternalProperties.BORDER_WIDTH + 1,
+                InternalProperties.PITCH_CENTER_X - InternalProperties.BORDER_WIDTH + 1,
                 self.PITCH_MARGIN_Y,
                 InternalProperties.BORDER_WIDTH * 2, InternalProperties.PITCH_HEIGHT
             )
@@ -96,7 +95,7 @@ class Pitch:
         for i in range(0, self.PITCH_MIDDLE_CIRCLE_DRAW_ITERS):
             pygame.gfxdraw.aacircle(
                 self.engine.screen,
-                self.PITCH_CENTER_X, self.PITCH_CENTER_Y,
+                InternalProperties.PITCH_CENTER_X, InternalProperties.PITCH_CENTER_Y,
                 self.PITCH_MIDDLE_CIRCLE_RADIUS - i,
                 ColorPalette.BORDER
             )
@@ -104,7 +103,7 @@ class Pitch:
         # Middle dot
         pygame.gfxdraw.filled_circle(
             self.engine.screen,
-            self.PITCH_CENTER_X, self.PITCH_CENTER_Y,
+            InternalProperties.PITCH_CENTER_X, InternalProperties.PITCH_CENTER_Y,
             InternalProperties.BORDER_WIDTH * 3, ColorPalette.BORDER
         )
 
@@ -112,7 +111,7 @@ class Pitch:
         pygame.draw.rect(self.engine.screen, ColorPalette.BORDER,
             (
                 self.PITCH_MARGIN_X - InternalProperties.BORDER_WIDTH,
-                self.PITCH_CENTER_Y - self.PITCH_PENALTY_AREA_HEIGHT / 2,
+                InternalProperties.PITCH_CENTER_Y - self.PITCH_PENALTY_AREA_HEIGHT / 2,
                 self.PITCH_PENALTY_AREA_WIDTH + InternalProperties.BORDER_WIDTH,
                 self.PITCH_PENALTY_AREA_HEIGHT
             ),
@@ -122,7 +121,7 @@ class Pitch:
         pygame.draw.rect(self.engine.screen, ColorPalette.BORDER,
             (
                 self.PITCH_MARGIN_X + InternalProperties.PITCH_WIDTH - self.PITCH_PENALTY_AREA_WIDTH,
-                self.PITCH_CENTER_Y - self.PITCH_PENALTY_AREA_HEIGHT / 2,
+                InternalProperties.PITCH_CENTER_Y - self.PITCH_PENALTY_AREA_HEIGHT / 2,
                 self.PITCH_PENALTY_AREA_WIDTH + InternalProperties.BORDER_WIDTH,
                 self.PITCH_PENALTY_AREA_HEIGHT
             ),
@@ -133,14 +132,14 @@ class Pitch:
         pygame.gfxdraw.filled_circle(
             self.engine.screen,
             self.PITCH_MARGIN_X + self.PITCH_PENALTY_SPOT_MARGIN,
-            self.PITCH_CENTER_Y,
+            InternalProperties.PITCH_CENTER_Y,
             InternalProperties.BORDER_WIDTH * 3, ColorPalette.BORDER
         )
 
         pygame.gfxdraw.filled_circle(
             self.engine.screen,
             self.PITCH_MARGIN_X + InternalProperties.PITCH_WIDTH - self.PITCH_PENALTY_SPOT_MARGIN,
-            self.PITCH_CENTER_Y,
+            InternalProperties.PITCH_CENTER_Y,
             InternalProperties.BORDER_WIDTH * 3, ColorPalette.BORDER
         )
 
@@ -149,7 +148,7 @@ class Pitch:
             pygame.gfxdraw.arc(
                 self.engine.screen,
                 self.PITCH_MARGIN_X + self.PITCH_PENALTY_AREA_WIDTH,
-                self.PITCH_CENTER_Y,
+                InternalProperties.PITCH_CENTER_Y,
                 self.PITCH_PENALTY_ARC_RADIUS - i,
                 270, 90, ColorPalette.BORDER
             )
@@ -157,14 +156,10 @@ class Pitch:
             pygame.gfxdraw.arc(
                 self.engine.screen,
                 self.PITCH_MARGIN_X + InternalProperties.PITCH_WIDTH - self.PITCH_PENALTY_AREA_WIDTH,
-                self.PITCH_CENTER_Y,
+                InternalProperties.PITCH_CENTER_Y,
                 self.PITCH_PENALTY_ARC_RADIUS - i,
                 90, 270, ColorPalette.BORDER
             )
-
-        # Draw goals
-        self.goalLeft.draw()
-        self.goalRight.draw()
 
     def resetPositions(self):
         self.teamLeft.resetPositions()

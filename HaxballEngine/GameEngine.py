@@ -106,25 +106,27 @@ class GameEngine:
         # Draw pitch
         self.pitch.draw()
 
-    def addAgent(self, agent: Agent, teamId: TeamId = None):
-        # Add new agent to the game and team
-        self.agents.append(agent)
-
+    def addAgent(self, teamId: TeamId = None):
         if teamId is None:
             if len(self.pitch.teamLeft.agents) >= len(self.pitch.teamRight.agents):
-                self.pitch.teamRight.addAgent(agent)
+                teamId = InternalProperties.TEAM_1_ID
             else:
-                self.pitch.teamLeft.addAgent(agent)
-        else:
-            if teamId in self.pitch.teams:
-                self.pitch.teams[teamId].addAgent(agent)
+                teamId = InternalProperties.TEAM_2_ID
 
-        self.resetPositions()
+        if teamId in self.pitch.teams:
+            agent: Agent = Agent(self, 0, 0, len(self.agents), teamId)
 
-    def addBall(self, ball: Ball):
+            # Add new agent to the game and team
+            self.agents.append(agent)
+            self.pitch.teams[teamId].addAgent(agent)
+
+            self.resetPositions()
+
+    def addBall(self):
+        ball = Ball(self, 0, 0, 0)
+
         # Add new ball to the game
         self.balls.append(ball)
-
         self.resetPositions()
 
     def update(self):
@@ -205,6 +207,9 @@ class GameEngine:
         for ball in self.balls:
             ball.draw()
 
+        self.pitch.goalLeft.draw()
+        self.pitch.goalRight.draw()
+
     # fix objects position, to prevent walls collisions
     def walls_collision(self, obj):
         Collision.walls_collision(obj, self)
@@ -221,7 +226,7 @@ class GameEngine:
         self.pitch.resetPositions()
 
         for ball in self.balls:
-            ball.set_move((0, 0), (self.pitch.PITCH_CENTER_X, self.pitch.PITCH_CENTER_Y))
+            ball.set_move((0, 0), (InternalProperties.PITCH_CENTER_X, InternalProperties.PITCH_CENTER_Y))
 
     def quit(self):
         self.agents.clear()

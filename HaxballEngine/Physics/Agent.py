@@ -14,12 +14,13 @@ class Agent(CirclePhysical, Drawable):
         self.mouse_pos = 0
 
     def kick(self, pos):
-        # check if ball is in hitbox range
+        # Check if ball is in hitbox range
         for ball in self.engine.balls:
             dist = (self.p.x - ball.p.x) ** 2 + (ball.p.y - self.p.y) ** 2
             if dist <= (self.hitbox + ball.hitbox) ** 2:
-                # kick ball to given pos
-                ball.v = (pos - ball.p).normalize() * (pos - ball.p).length() / 12
+                if (pos - ball.p).length() > 0:
+                    # Kick ball to given pos
+                    ball.v = (pos - ball.p).normalize() * (pos - ball.p).length() / 12
 
     def mode_ball_control(self):
         # turn down ball_control to reduce the bounce

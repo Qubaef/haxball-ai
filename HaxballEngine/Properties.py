@@ -25,14 +25,19 @@ class InternalProperties:
     # Display properties
     ASPECT_RATIO: float = 4 / 3
 
-    SCREEN_WIDTH: int = 1100
+    SCREEN_WIDTH: int = 1600
     SCREEN_HEIGHT: int = int(SCREEN_WIDTH / ASPECT_RATIO)
     SCREEN_SIZE: Tuple[int, int] = (SCREEN_WIDTH, SCREEN_HEIGHT)
 
     PITCH_SIZE_MUL: float = 0.8
+
     PITCH_WIDTH: int = int(SCREEN_WIDTH * PITCH_SIZE_MUL)
     PITCH_HEIGHT: int = int(SCREEN_HEIGHT * PITCH_SIZE_MUL)
     PITCH_SIZE: Tuple[int, int] = (PITCH_WIDTH, PITCH_HEIGHT)
+
+    PITCH_CENTER_X: int = int(SCREEN_WIDTH / 2)
+    PITCH_CENTER_Y: int = int(SCREEN_HEIGHT / 2)
+    PITCH_CENTER: Tuple[int, int] = (PITCH_CENTER_X, PITCH_CENTER_Y)
 
     TARGET_FPS: int = 60
     LOCK_FPS: bool = True
@@ -47,6 +52,9 @@ class InternalProperties:
     # Game logic properties
     TEAM_1_ID: int = 0
     TEAM_2_ID: int = 1
+
+    TEAM_1_DIR: int = -1
+    TEAM_2_DIR: int = 0
 
     COUNTDOWN_TIME: int = 0  # in ms
     GOAL_SCORE_TIME: int = 0  # in ms
@@ -70,4 +78,5 @@ class ColorPalette:
         InternalProperties.TEAM_1_ID: TEAM_1,
         InternalProperties.TEAM_2_ID: TEAM_2
     }
+
 
