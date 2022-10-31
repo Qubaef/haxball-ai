@@ -30,7 +30,7 @@ class InputManager:
                 shouldClose = True
             elif event.type == pygame.KEYDOWN:
                 if event.key == InputManager.KEY_TEST_MODE:
-                    Properties.TEST_MODE = not Properties.TEST_MODE
+                    Properties.DEBUG_MODE = not Properties.DEBUG_MODE
             # elif event.type == pygame.KEYUP:
             #     if event.key == pygame.K_SPACE:
             #         player.mode_normal()

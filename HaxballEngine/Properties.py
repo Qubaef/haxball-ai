@@ -1,6 +1,8 @@
-from typing import Tuple
+from typing import Tuple, List, Dict
 
 import pygame
+
+from Utils.Types import Color
 
 
 class Properties:
@@ -10,7 +12,9 @@ class Properties:
 
     USER_INPUTS_ENABLED: bool = True
 
-    TEST_MODE: bool = False
+    DEBUG_MODE: bool = False
+
+    HEADLESS_MODE: bool = False
 
 
 class InternalProperties:
@@ -31,6 +35,7 @@ class InternalProperties:
     PITCH_SIZE: Tuple[int, int] = (PITCH_WIDTH, PITCH_HEIGHT)
 
     TARGET_FPS: int = 60
+    LOCK_FPS: bool = True
 
     BORDER_WIDTH: int = 2
 
@@ -39,18 +44,30 @@ class InternalProperties:
 
     COLLISION_SECTOR_SIZE: int = 50
 
+    # Game logic properties
+    TEAM_1_ID: int = 0
+    TEAM_2_ID: int = 1
+
+    COUNTDOWN_TIME: int = 0  # in ms
+    GOAL_SCORE_TIME: int = 0  # in ms
+
 
 class ColorPalette:
     """
     Color palette of various components in the game.
     """
 
-    BACKGROUND: Tuple[int, int, int] = (164, 143, 91)
+    BACKGROUND: Color = (164, 143, 91)
 
-    PITCH_1: Tuple[int, int, int] = (113, 152, 63)
-    PITCH_2: Tuple[int, int, int] = (134, 185, 80)
+    PITCH_1: Color = Color(113, 152, 63)
+    PITCH_2: Color = Color(134, 185, 80)
 
-    BORDER: Tuple[int, int, int] = (174, 202, 137)
+    BORDER: Color = Color(174, 202, 137)
 
-    TEAM_1 = (0, 0, 255)
-    TEAM_2 = (255, 0, 0)
+    TEAM_1: Color = Color(0, 0, 255)
+    TEAM_2: Color = Color(255, 0, 0)
+    TEAM: Dict[int, Color] = {
+        InternalProperties.TEAM_1_ID: TEAM_1,
+        InternalProperties.TEAM_2_ID: TEAM_2
+    }
+

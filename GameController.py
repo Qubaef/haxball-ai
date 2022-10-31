@@ -1,34 +1,40 @@
-import pygame
+from typing import List
 
-from HaxballEngine.Player import Player
+from HaxballEngine.Physics.Agent import Agent
 from HaxballEngine.GameEngine import GameEngine
-from HaxballEngine.Ball import Ball
+from HaxballEngine.Physics.Ball import Ball
 
 from HaxballEngine.AgentInput import AgentInput
+from HaxballEngine.Properties import InternalProperties
 
 
 class GameController(object):
 
-    def __init__(self):
+    def __init__(self, playersInTeam: int):
         # initialize game, ball, and player
-        self.game = GameEngine()
+        self.engine = GameEngine()
 
-        self.ball = Ball(self.game, 500, 300, 0)
-        self.game.new_ball(self.ball)
+        self.ball = Ball(self.engine, 500, 300, 0)
+        self.engine.addBall(self.ball)
 
-        self.player1 = Player(self.game, 400, 300, 1, (0, 0, 255))
-        self.game.new_player(self.player1)
+        for i in range(playersInTeam):
+            self.engine.addAgent(Agent(self.engine, 100 + i * 50, 100, i, 0), InternalProperties.TEAM_1_ID)
+            self.engine.addAgent(Agent(self.engine, 100 + i * 50, 500, i, 1), InternalProperties.TEAM_2_ID)
 
-        # self.player2 = Player(self.game, 400, 300, 1, (0, 0, 255))
-        # self.game.new_player(self.player2)
+    def nextFrame(self, inputs: List[AgentInput]):
+        assert len(inputs) == len(self.engine.agents)
 
-    def next_frame(self, inputs: AgentInput):
+        # Update agents movements
+        for i in range(len(inputs)):
+            if inputs[i].movementDirection.length() > 0:
+                self.engine.agents[i].velocity_add(inputs[i].movementDirection.normalize())
 
-        # set players moves
-        if inputs.movementDirection.length() > 0:
-            self.player1.velocity_add(inputs.movementDirection.normalize())
+        # Update ball kicks
+        for i in range(len(inputs)):
+            if inputs[i].kick > 0:
+                self.engine.agents[i].kick(inputs[i].kickPos)
 
-        self.player1.mode_normal()
+        # self.player1.mode_normal()
 
         # # set ball control
         # if input_player1[1] == 0:
@@ -41,30 +47,18 @@ class GameController(object):
         # else:
         #     self.player2.mode_ball_control()
 
-        # kick the ball
-        if inputs.kick is True:
-            self.player1.kick(inputs.kickPos)
-
         # if input_player1[2] == 1:
         #     # self.player2.kick(input_player2[3])
 
-        # render next frame
-        self.game.redraw()
-
-        # return rendered state pack
-        return self.create_state_pack()
-
-    def create_state_pack(self):
-        # TODO
-        return 1
+        # Render next frame
+        self.engine.update()
 
     def generate_current_reward(self):
         # TODO
+        raise NotImplementedError
+
         reward_player1 = -(self.player1.p - self.ball.p).length()
-
-        # reward_player2 = -(self.player2.p - self.ball.p).length()
-
-        return reward_player1, reward_player2
+        return reward_player1
 
     def game_quit(self):
-        self.game.quit()
+        self.engine.quit()

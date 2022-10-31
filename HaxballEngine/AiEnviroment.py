@@ -15,4 +15,4 @@ input_player2[2] = 0
 input_player2[3] = 0
 
 while (True):
-    env.next_frame(input_player1, input_player2)
+    env.nextFrame(input_player1, input_player2)

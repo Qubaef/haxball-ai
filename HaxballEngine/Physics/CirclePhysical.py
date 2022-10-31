@@ -2,13 +2,15 @@ import pygame
 import math
 from abc import ABC
 
+import pygame.gfxdraw
+
 from HaxballEngine.Properties import InternalProperties
 
 
 class CirclePhysical(ABC):
 
-    def __init__(self, game, px, py, number, weight, size, color):
-        self.game = game
+    def __init__(self, engine, px, py, number, weight, size, color):
+        self.engine = engine
         self.number = number
         self.weight = weight
         self.size = size  # size used for drawing and collision detection
@@ -40,18 +42,21 @@ class CirclePhysical(ABC):
             self.v = self.v.normalize() * self.v_max
 
         # fix object's position with wall collision detection
-        self.game.walls_collision(self)
+        self.engine.walls_collision(self)
 
         self.to_sector_add()
 
     def from_sector_remove(self):
         # remove element from currently occupied sector
-        if self in self.game.sectors[int(self.p.x / InternalProperties.COLLISION_SECTOR_SIZE)][int(self.p.y / InternalProperties.COLLISION_SECTOR_SIZE)]:
-            self.game.sectors[int(self.p.x / InternalProperties.COLLISION_SECTOR_SIZE)][int(self.p.y / InternalProperties.COLLISION_SECTOR_SIZE)].remove(self)
+        if self in self.engine.collisionSectors[int(self.p.x / InternalProperties.COLLISION_SECTOR_SIZE)][
+            int(self.p.y / InternalProperties.COLLISION_SECTOR_SIZE)]:
+            self.engine.collisionSectors[int(self.p.x / InternalProperties.COLLISION_SECTOR_SIZE)][
+                int(self.p.y / InternalProperties.COLLISION_SECTOR_SIZE)].remove(self)
 
     def to_sector_add(self):
-        # add element to right sector
-        self.game.sectors[int(self.p.x / InternalProperties.COLLISION_SECTOR_SIZE)][int(self.p.y / InternalProperties.COLLISION_SECTOR_SIZE)].append(self)
+        # Add element to right sector
+        self.engine.collisionSectors[int(self.p.x / InternalProperties.COLLISION_SECTOR_SIZE)][
+            int(self.p.y / InternalProperties.COLLISION_SECTOR_SIZE)].append(self)
 
     def set_move(self, v, p):
         # set given velocity and position
@@ -77,10 +82,10 @@ class CirclePhysical(ABC):
         # iterate through sectors and gather all circles
         objects = []
         for i in range(int(self.p.x / InternalProperties.COLLISION_SECTOR_SIZE) - sector_num,
-                       int(self.p.x / InternalProperties.COLLISION_SECTOR_SIZE) + sector_num + 1):
+                int(self.p.x / InternalProperties.COLLISION_SECTOR_SIZE) + sector_num + 1):
             for j in range(int(self.p.y / InternalProperties.COLLISION_SECTOR_SIZE) - sector_num,
-                           int(self.p.y / InternalProperties.COLLISION_SECTOR_SIZE) + sector_num + 1):
-                if 0 <= i < len(self.game.sectors) and 0 <= j < len(self.game.sectors[0]):
-                    objects += self.game.sectors[i][j]
+                    int(self.p.y / InternalProperties.COLLISION_SECTOR_SIZE) + sector_num + 1):
+                if 0 <= i < len(self.engine.collisionSectors) and 0 <= j < len(self.engine.collisionSectors[0]):
+                    objects += self.engine.collisionSectors[i][j]
 
         return objects

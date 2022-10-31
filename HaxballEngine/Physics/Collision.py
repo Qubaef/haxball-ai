@@ -1,20 +1,17 @@
 import math
-from typing import Tuple, Any
 
-import pygame
-from HaxballEngine.Post import Post
-from HaxballEngine.Ball import Ball
-from HaxballEngine.Player import Player
+from HaxballEngine.Physics.Post import Post
+from HaxballEngine.Physics.Ball import Ball
+from HaxballEngine.Physics.Agent import Agent
 from HaxballEngine.Properties import InternalProperties
 
 
 class Collision:
 
-    # check if circle collides with any other circle in the nearest sectors
+    # Check if circle collides with any other circle in the nearest sectors
     @staticmethod
     def collide(circ1):
-
-        # get objects from nearby sectors
+        # Get objects from nearby sectors
         nearby = circ1.get_nearby()
 
         for circ2 in nearby:
@@ -22,15 +19,15 @@ class Collision:
                 dist = math.sqrt((circ1.p.x - circ2.p.x) ** 2 + (circ2.p.y - circ1.p.y) ** 2)
                 if dist <= circ1.size + circ2.size:
 
-                    # fix post speed
+                    # Fix post speed
                     if isinstance(circ1, Post):
                         circ1.v.x = 0
                         circ1.v.y = 0
 
-                    # move colliding circles away
+                    # Move colliding circles away
                     overlap = (dist - circ1.size - circ2.size) / 2
 
-                    # move circle1
+                    # Move circle1
                     circ1.from_sector_remove()
                     if dist != 0:
                         p_new = circ1.p - overlap * (circ2.weight / circ1.weight) * (circ1.p - circ2.p) / dist
@@ -38,10 +35,10 @@ class Collision:
                     else:
                         p_new = circ1.p - overlap * (circ2.weight / circ1.weight) * circ1.p.normalize()
                         circ1.set_p(p_new.x, p_new.y)
-                    Collision.walls_collision(circ1, circ1.game)
+                    Collision.walls_collision(circ1, circ1.engine)
                     circ1.to_sector_add()
 
-                    # move circle2
+                    # Move circle2
                     circ2.from_sector_remove()
                     if dist != 0:
                         p_new = circ2.p + overlap * (circ1.weight / circ2.weight) * (circ1.p - circ2.p) / dist
@@ -49,17 +46,17 @@ class Collision:
                     else:
                         p_new = circ2.p + overlap * (circ1.weight / circ2.weight) * circ1.p.normalize()
                         circ2.set_p(p_new.x, p_new.y)
-                    Collision.walls_collision(circ2, circ2.game)
+                    Collision.walls_collision(circ2, circ2.engine)
                     circ2.to_sector_add()
 
-                    # count velocities after collision
+                    # Count velocities after collision
                     circ1.v, circ2.v = Collision.collision_calculator(circ1.v, circ2.v, circ1.weight, circ2.weight,
                                                                       circ1.p, circ2.p)
 
-                    # player ball control
+                    # Player ball control
                     circ2.v = circ2.v * circ1.ball_control
 
-                    # check if ball velocity is not bigger than max allowed velocity
+                    # Check if ball velocity is not bigger than max allowed velocity
                     if circ2.v.magnitude() > circ2.v_max:
                         circ2.v = circ2.v.normalize() * circ2.v_max
 
@@ -87,12 +84,12 @@ class Collision:
             obj.set_p(obj.p.x, int(InternalProperties.PITCH_HEIGHT + ((InternalProperties.SCREEN_HEIGHT - InternalProperties.PITCH_HEIGHT) / 2) - obj.size))
             obj.v.y *= -InternalProperties.WALL_BOUNCE_FACTOR
 
-        if isinstance(obj, Player):
+        if isinstance(obj, Agent):
             # Left wall
             if obj.p.x < int(obj.size + (InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH) / 2):
-                if game.goal_left.post_down.p.y > obj.p.y > game.goal_left.post_up.p.y:
-                    if obj.p.x < game.goal_left.x:
-                        obj.set_p(game.goal_left.x, obj.p.y)
+                if game.pitch.goalLeft.post_down.p.y > obj.p.y > game.pitch.goalLeft.post_up.p.y:
+                    if obj.p.x < game.pitch.goalLeft.x:
+                        obj.set_p(game.pitch.goalLeft.x, obj.p.y)
                         obj.v *= 0
                 else:
                     obj.set_p(int(obj.size + (InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH) / 2), obj.p.y)
@@ -100,9 +97,9 @@ class Collision:
 
             # Right wall
             if obj.p.x > int(InternalProperties.PITCH_WIDTH + ((InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH) / 2) - obj.size):
-                if game.goal_right.post_down.p.y > obj.p.y > game.goal_right.post_up.p.y:
-                    if obj.p.x > game.goal_right.x:
-                        obj.set_p(game.goal_right.x, obj.p.y)
+                if game.pitch.goalRight.post_down.p.y > obj.p.y > game.pitch.goalRight.post_up.p.y:
+                    if obj.p.x > game.pitch.goalRight.x:
+                        obj.set_p(game.pitch.goalRight.x, obj.p.y)
                         obj.v *= 0
                 else:
                     obj.set_p(int(InternalProperties.PITCH_WIDTH + ((InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH) / 2) - obj.size), obj.p.y)
@@ -111,18 +108,18 @@ class Collision:
         elif isinstance(obj, Ball):
             # Left wall
             if obj.p.x < int(obj.size + (InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH) / 2):
-                if game.goal_left.post_down.p.y > obj.p.y > game.goal_left.post_up.p.y:
-                    if obj.p.x < game.goal_left.x - obj.size:
-                        game.goal_scored(game.goal_left)
+                if game.pitch.goalLeft.post_down.p.y > obj.p.y > game.pitch.goalLeft.post_up.p.y:
+                    if obj.p.x < game.pitch.goalLeft.x - obj.size:
+                        game.goalScored(game.pitch.goalLeft)
                 else:
                     obj.set_p(int(obj.size + (InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH) / 2), obj.p.y)
                     obj.v.x *= -InternalProperties.WALL_BOUNCE_FACTOR
 
             # Right wall
             if obj.p.x > int(InternalProperties.PITCH_WIDTH + ((InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH) / 2) - obj.size):
-                if game.goal_right.post_down.p.y > obj.p.y > game.goal_right.post_up.p.y:
-                    if obj.p.x > game.goal_right.x + obj.size:
-                        game.goal_scored(game.goal_right)
+                if game.pitch.goalRight.post_down.p.y > obj.p.y > game.pitch.goalRight.post_up.p.y:
+                    if obj.p.x > game.pitch.goalRight.x + obj.size:
+                        game.goalScored(game.pitch.goalRight)
                 else:
                     obj.set_p(int(InternalProperties.PITCH_WIDTH + ((InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH) / 2) - obj.size), obj.p.y)
                     obj.v.x *= -InternalProperties.WALL_BOUNCE_FACTOR
