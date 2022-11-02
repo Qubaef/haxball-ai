@@ -3,13 +3,18 @@ from typing import Dict
 import pygame
 import pygame.gfxdraw
 
-from HaxballEngine.Pitch.Goal import Goal
-from HaxballEngine.Properties import InternalProperties, ColorPalette
-from HaxballEngine.Team import Team
+from HaxballEngine.Physics.Agent import Agent
+from HaxballEngine.Physics.Ball import Ball
+from HaxballEngine.Physics.CirclePhysical import CirclePhysical
 from Utils.Types import TeamId, Color
 
+from HaxballEngine.Properties import InternalProperties, ColorPalette
+from HaxballEngine.Team import Team
+from HaxballEngine.Pitch.Goal import Goal
+from HaxballEngine.Physics.SphereCollider import SphereCollider
 
-class Pitch:
+
+class Pitch(SphereCollider):
     PITCH_MARGIN_X: int = int((InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH) / 2)
     PITCH_MARGIN_Y: int = int((InternalProperties.SCREEN_HEIGHT - InternalProperties.PITCH_HEIGHT) / 2)
 
@@ -164,3 +169,62 @@ class Pitch:
     def resetPositions(self):
         self.teamLeft.resetPositions()
         self.teamRight.resetPositions()
+
+    def collide(self, sphere: CirclePhysical):
+        # Check collision with pitch walls
+
+        # Top wall
+        topWallY: float = sphere.size + Pitch.PITCH_MARGIN_Y
+        if sphere.p.y < topWallY:
+            sphere.setPos(pygame.Vector2(sphere.p.x, topWallY))
+            sphere.v.y *= -InternalProperties.WALL_BOUNCE_FACTOR
+
+        # Bottom wall
+        bottomWallY: float = InternalProperties.PITCH_HEIGHT + (Pitch.PITCH_MARGIN_Y - sphere.size)
+        if sphere.p.y > bottomWallY:
+            sphere.setPos(pygame.Vector2(sphere.p.x, bottomWallY))
+            sphere.v.y *= -InternalProperties.WALL_BOUNCE_FACTOR
+
+        if isinstance(sphere, Agent):
+            # Left wall
+            leftWallX: float = sphere.size + Pitch.PITCH_MARGIN_X
+            if sphere.p.x < leftWallX:
+                if self.goalLeft.postDown.p.y > sphere.p.y > self.goalLeft.postUp.p.y:
+                    if sphere.p.x < self.goalLeft.x:
+                        sphere.setPos(pygame.Vector2(self.goalLeft.x, sphere.p.y))
+                        sphere.v *= 0
+                else:
+                    sphere.setPos(pygame.Vector2(leftWallX, sphere.p.y))
+                    sphere.v.x *= -InternalProperties.WALL_BOUNCE_FACTOR
+
+            # Right wall
+            rightWallX: float = InternalProperties.PITCH_WIDTH + (Pitch.PITCH_MARGIN_X - sphere.size)
+            if sphere.p.x > rightWallX:
+                if self.goalRight.postDown.p.y > sphere.p.y > self.goalRight.postUp.p.y:
+                    if sphere.p.x > self.goalRight.x:
+                        sphere.setPos(pygame.Vector2(self.goalRight.x, sphere.p.y))
+                        sphere.v *= 0
+                else:
+                    sphere.setPos(pygame.Vector2(rightWallX, sphere.p.y))
+                    sphere.v.x *= -InternalProperties.WALL_BOUNCE_FACTOR
+
+        elif isinstance(sphere, Ball):
+            # Left wall
+            leftWallX: float = sphere.size + Pitch.PITCH_MARGIN_X
+            if sphere.p.x < leftWallX:
+                if self.goalLeft.postDown.p.y > sphere.p.y > self.goalLeft.postUp.p.y:
+                    if sphere.p.x < self.goalLeft.x - sphere.size:
+                        self.engine.goalScored(self.goalLeft)
+                else:
+                    sphere.setPos(pygame.Vector2(leftWallX, sphere.p.y))
+                    sphere.v.x *= -InternalProperties.WALL_BOUNCE_FACTOR
+
+            # Right wall
+            rightWallX: float = InternalProperties.PITCH_WIDTH + (Pitch.PITCH_MARGIN_X - sphere.size)
+            if sphere.p.x > rightWallX:
+                if self.goalRight.postDown.p.y > sphere.p.y > self.goalRight.postUp.p.y:
+                    if sphere.p.x > self.goalRight.x + sphere.size:
+                        self.engine.goalScored(self.goalRight)
+                else:
+                    sphere.setPos(pygame.Vector2(rightWallX, sphere.p.y))
+                    sphere.v.x *= -InternalProperties.WALL_BOUNCE_FACTOR

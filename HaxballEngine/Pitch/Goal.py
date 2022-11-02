@@ -5,6 +5,7 @@ import pygame
 from HaxballEngine.Physics.Drawable import Drawable
 from HaxballEngine.Physics.Post import Post
 from HaxballEngine.Physics.Collision import Collision
+from HaxballEngine.Physics.SphereCollider import SphereCollider
 from HaxballEngine.Properties import Properties
 from Utils.Types import Color
 
@@ -31,12 +32,12 @@ class Goal(Drawable):
             self.goalImage = pygame.transform.scale(self.goalImage, imageSize)
 
         # Initialize Posts
-        self.postUp: Post = Post(self.engine, self.x, self.y_up, self.color)
-        self.postDown: Post = Post(self.engine, self.x, self.y_down, self.color)
+        self.postUp: Post = Post(self.engine, pygame.Vector2(self.x, self.y_up), self.color)
+        self.postDown: Post = Post(self.engine, pygame.Vector2(self.x, self.y_down), self.color)
 
     def goal_collide(self):
-        Collision.collide(self.postUp)
-        Collision.collide(self.postDown)
+        SphereCollider.collide(self.postUp)
+        SphereCollider.collide(self.postDown)
 
     def get_px(self):
         return self.x + self.direction * self.width

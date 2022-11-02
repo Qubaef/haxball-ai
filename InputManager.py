@@ -35,8 +35,8 @@ class InputManager:
                 if event.key == InputManager.KEY_TEST_MODE:
                     Properties.DEBUG_MODE = not Properties.DEBUG_MODE
                 if event.key == InputManager.KEY_RESET_BALL:
-                    gameController.engine.balls[0].set_move((0, 0),
-                        (InternalProperties.PITCH_CENTER[0], InternalProperties.PITCH_CENTER[1]))
+                    gameController.engine.balls[0].setMovement(pygame.Vector2(0, 0),
+                        pygame.Vector2((InternalProperties.PITCH_CENTER[0], InternalProperties.PITCH_CENTER[1])))
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 userInput.kick = True
                 userInput.kickPos = pygame.Vector2(pygame.mouse.get_pos())
@@ -51,12 +51,6 @@ class InputManager:
             userInput.movementDirection += (1, 0)
         if pygameKeys[InputManager.KEY_LEFT]:
             userInput.movementDirection += (-1, 0)
-        # if input[K_r]:
-        #     # cross ball from left top corner position
-        #     ball.set_move((15, 15), (0, 0))
-        # if input[K_SPACE]:
-        #     # turn on better ball control
-        #     player.mode_ball_control()
         if pygameKeys[InputManager.KEY_EXIT]:
             shouldClose = True
 

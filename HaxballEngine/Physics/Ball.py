@@ -4,12 +4,15 @@ import pygame.gfxdraw
 from HaxballEngine.Physics.CirclePhysical import CirclePhysical
 from HaxballEngine.Physics.Drawable import Drawable
 from HaxballEngine.Properties import Properties
+from Utils.Types import Color
 
 
 class Ball(CirclePhysical, Drawable):
+    WEIGHT: float = 0.2
+    SIZE: float = 10
 
-    def __init__(self, game, px, py, number):
-        super().__init__(game, px, py, number, 0.2, 10, (255, 255, 255))
+    def __init__(self, game, pos: pygame.Vector2):
+        super().__init__(game, pos, 0, self.WEIGHT, self.SIZE, Color(255, 255, 255))
 
         if not Properties.HEADLESS_MODE:
             self.ballImage = pygame.image.load("Assets/ball.png").convert_alpha()
@@ -20,4 +23,4 @@ class Ball(CirclePhysical, Drawable):
 
         # Draw hitboxes
         if Properties.DEBUG_MODE:
-            pygame.gfxdraw.aacircle(self.engine.screen, int(self.p.x), int(self.p.y), self.hitbox, (0, 0, 255))
+            pygame.gfxdraw.aacircle(self.engine.screen, int(self.p.x), int(self.p.y), int(self.hitbox), (0, 0, 255))

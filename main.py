@@ -11,7 +11,7 @@ from InputManager import InputManager
 
 
 def startUserGameplay():
-    agentsInTeam: int = 11
+    agentsInTeam: int = 5
 
     # Initialize game
     gameController: GameController = GameController(agentsInTeam)
@@ -28,10 +28,10 @@ def startUserGameplay():
 
     # Main loop of the game
     while not shouldClose:
-        # Move every player towards the ball
-        ballPos = gameController.engine.balls[0].p
-        for i in range(len(agentsInputs)):
-            agentsInputs[i].movementDirection = ballPos - gameController.engine.agents[i].p
+        # # Move every player towards the ball
+        # ballPos = gameController.engine.balls[0].p
+        # for i in range(len(agentsInputs)):
+        #     agentsInputs[i].movementDirection = ballPos - gameController.engine.agents[i].p
 
         # dataStory.storeVal("ballPos", frameId,  [ballPos[0], ballPos[1]])
 

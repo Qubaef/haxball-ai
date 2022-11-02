@@ -5,13 +5,17 @@ import pygame.gfxdraw
 
 from HaxballEngine.Physics.CirclePhysical import CirclePhysical
 from HaxballEngine.Physics.Drawable import Drawable
-from HaxballEngine.Properties import Properties
+from HaxballEngine.Properties import Properties, ColorPalette
+from Utils.Types import Color, TeamId
 
 
 class Agent(CirclePhysical, Drawable):
-    def __init__(self, engine, px, py, number, color):
-        super().__init__(engine, px, py, number, 1, 15, color)
-        self.mouse_pos = 0
+    WEIGHT: float = 2
+    SIZE: float = 15
+
+    def __init__(self, engine, pos: pygame.Vector2, number: int, teamId: TeamId):
+        super().__init__(engine, pos, number, self.WEIGHT, self.SIZE, ColorPalette.TEAM[teamId])
+        self.teamId: TeamId = teamId
 
     def kick(self, pos):
         # Check if ball is in hitbox range
@@ -19,24 +23,13 @@ class Agent(CirclePhysical, Drawable):
             dist = (self.p.x - ball.p.x) ** 2 + (ball.p.y - self.p.y) ** 2
             if dist <= (self.hitbox + ball.hitbox) ** 2:
                 if (pos - ball.p).length() > 0:
-                    # Kick ball to given pos
                     ball.v = (pos - ball.p).normalize() * (pos - ball.p).length() / 12
 
-    def mode_ball_control(self):
-        # turn down ball_control to reduce the bounce
-        self.ball_control = 0.1
-        self.v_max = 2 / math.pow(self.weight, 2 / 3)
-
-    def mode_normal(self):
-        # bring back normal mode
-        self.ball_control = 1.0
-        self.v_max = 6 / math.pow(self.weight, 2 / 3)
-
     def draw(self):
-        pygame.gfxdraw.filled_circle(self.engine.screen, int(self.p.x), int(self.p.y), self.size, self.color)
-        pygame.gfxdraw.aacircle(self.engine.screen, int(self.p.x), int(self.p.y), self.size, self.border_color)
-        pygame.gfxdraw.aacircle(self.engine.screen, int(self.p.x), int(self.p.y), self.size - 1, self.border_color)
+        pygame.gfxdraw.filled_circle(self.engine.screen, int(self.p.x), int(self.p.y), int(self.size), self.color)
+        pygame.gfxdraw.aacircle(self.engine.screen, int(self.p.x), int(self.p.y), int(self.size), self.border_color)
+        pygame.gfxdraw.aacircle(self.engine.screen, int(self.p.x), int(self.p.y), int(self.size - 1), self.border_color)
 
         # Draw hitboxes
         if Properties.DEBUG_MODE:
-            pygame.gfxdraw.aacircle(self.engine.screen, int(self.p.x), int(self.p.y), self.hitbox, (0, 0, 255))
+            pygame.gfxdraw.aacircle(self.engine.screen, int(self.p.x), int(self.p.y), int(self.hitbox), (0, 0, 255))

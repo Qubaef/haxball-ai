@@ -141,4 +141,4 @@ class Team:
             onHalfPosition: pygame.Vector2 = (pitchMargin + posOnPitchHalf) + pygame.Vector2(InternalProperties.SCREEN_SIZE) * self.attackDir
             onHalfPosition = pygame.Vector2(abs(onHalfPosition.x), abs(onHalfPosition.y))
 
-            self.agents[i].set_move((0, 0), onHalfPosition)
+            self.agents[i].setMovement(pygame.Vector2(0, 0), onHalfPosition)

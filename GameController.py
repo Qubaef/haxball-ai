@@ -26,7 +26,7 @@ class GameController(object):
         # Update agents movements
         for i in range(len(inputs)):
             if inputs[i].movementDirection.length() > 0:
-                self.engine.agents[i].velocity_add(inputs[i].movementDirection.normalize())
+                self.engine.agents[i].addVel(inputs[i].movementDirection.normalize())
 
         # Update ball kicks
         for i in range(len(inputs)):

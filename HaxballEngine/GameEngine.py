@@ -6,6 +6,7 @@ from math import ceil
 
 from HaxballEngine.Physics.Agent import Agent
 from HaxballEngine.Physics.Ball import Ball
+from HaxballEngine.Physics.SphereCollider import SphereCollider
 from HaxballEngine.Pitch.Pitch import Pitch
 from HaxballEngine.Properties import Properties, InternalProperties, ColorPalette
 
@@ -114,7 +115,7 @@ class GameEngine:
                 teamId = InternalProperties.TEAM_2_ID
 
         if teamId in self.pitch.teams:
-            agent: Agent = Agent(self, 0, 0, len(self.agents), teamId)
+            agent: Agent = Agent(self, pygame.Vector2(0, 0), len(self.agents), teamId)
 
             # Add new agent to the game and team
             self.agents.append(agent)
@@ -123,7 +124,7 @@ class GameEngine:
             self.resetPositions()
 
     def addBall(self):
-        ball = Ball(self, 0, 0, 0)
+        ball = Ball(self, pygame.Vector2(0, 0))
 
         # Add new ball to the game
         self.balls.append(ball)
@@ -132,14 +133,14 @@ class GameEngine:
     def update(self):
         # dt is time since last tick
         if InternalProperties.LOCK_FPS:
-            dt: int = self.fpsClock.tick(InternalProperties.TARGET_FPS)
+            dt: float = self.fpsClock.tick(InternalProperties.TARGET_FPS) / 1000
         else:
             self.fpsClock.tick()
-            dt: int = int(1 / InternalProperties.TARGET_FPS * 1000)
+            dt: float = 1 / InternalProperties.TARGET_FPS
 
         # Update game states
         self.clock += dt
-        self.gameState.update(self, dt)
+        self.gameState.update(self, int(dt * 1000))
 
         # Update mouse position
         self.mousePos = pygame.Vector2(pygame.mouse.get_pos())
@@ -147,15 +148,21 @@ class GameEngine:
         if self.gameState == GameState.RUNNING:
             # Update objects positions and redraw players
             for agent in self.agents:
-                agent.update()
+                agent.update(dt)
             for ball in self.balls:
-                ball.update()
+                ball.update(dt)
 
             # Check collisions
             for agent in self.agents:
-                Collision.collide(agent)
+                SphereCollider.collide(agent)
             for ball in self.balls:
-                Collision.collide(ball)
+                SphereCollider.collide(ball)
+
+            # Update walls collisions
+            for agent in self.agents:
+                self.wallsCollision(agent)
+            for ball in self.balls:
+                self.wallsCollision(ball)
 
             # Check collisions with posts
             self.pitch.goalLeft.goal_collide()
@@ -184,7 +191,8 @@ class GameEngine:
                     for j in range(int(agent.p.y / InternalProperties.COLLISION_SECTOR_SIZE) - sector_num,
                             int(agent.p.y / InternalProperties.COLLISION_SECTOR_SIZE) + sector_num + 1):
                         pygame.draw.rect(self.screen, (0, 255 - ((i + j) % 2) * 50, 0), (
-                            i * InternalProperties.COLLISION_SECTOR_SIZE, j * InternalProperties.COLLISION_SECTOR_SIZE,
+                            int(agent.p.x / InternalProperties.COLLISION_SECTOR_SIZE) * InternalProperties.COLLISION_SECTOR_SIZE,
+                            int(agent.p.y / InternalProperties.COLLISION_SECTOR_SIZE) * InternalProperties.COLLISION_SECTOR_SIZE,
                             int(InternalProperties.COLLISION_SECTOR_SIZE),
                             int(InternalProperties.COLLISION_SECTOR_SIZE)))
             for ball in self.balls:
@@ -211,22 +219,26 @@ class GameEngine:
         self.pitch.goalRight.draw()
 
     # fix objects position, to prevent walls collisions
-    def walls_collision(self, obj):
-        Collision.walls_collision(obj, self)
+    def wallsCollision(self, obj):
+        self.pitch.collide(obj)
 
     def goalScored(self, goal):
-        if goal == self.pitch.goalLeft:
-            self.pitch.teamRight.addPoint()
-        else:
-            self.pitch.teamLeft.addPoint()
+        if self.gameState.value == GameState.RUNNING:
+            if goal == self.pitch.goalLeft:
+                self.pitch.teamRight.addPoint()
+            else:
+                self.pitch.teamLeft.addPoint()
 
-        self.gameState.value = GameState.GOAL_SCORED
+            self.gameState.value = GameState.GOAL_SCORED
 
     def resetPositions(self):
         self.pitch.resetPositions()
 
         for ball in self.balls:
-            ball.set_move((0, 0), (InternalProperties.PITCH_CENTER_X, InternalProperties.PITCH_CENTER_Y))
+            ball.setMovement(
+                pygame.Vector2(0, 0),
+                pygame.Vector2(InternalProperties.PITCH_CENTER_X, InternalProperties.PITCH_CENTER_Y)
+            )
 
     def quit(self):
         self.agents.clear()

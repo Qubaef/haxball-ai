@@ -7,18 +7,18 @@ from Utils.Types import Color
 
 
 class Post(CirclePhysical, Drawable):
-    def __init__(self, game, px, py, color: Color):
-        super().__init__(game, px, py, 0, 1, 6, color)
-        self.to_sector_add()
+    def __init__(self, game, pos: pygame.Vector2, color: Color):
+        super().__init__(game, pos, 0, 1, 6, color)
+        self.toSectorAdd()
 
-    def update(self):
-        self.v = (0, 0)
+    def update(self, dt: float):
+        self.v = pygame.Vector2(0, 0)
         pass
 
-    def set_p(self, px, py):
+    def setPos(self, pos: pygame.Vector2):
         pass
 
     def draw(self):
-        pygame.gfxdraw.filled_circle(self.engine.screen, int(self.p.x), int(self.p.y), self.size, self.color)
-        pygame.gfxdraw.aacircle(self.engine.screen, int(self.p.x), int(self.p.y), self.size, self.border_color)
-        pygame.gfxdraw.aacircle(self.engine.screen, int(self.p.x), int(self.p.y), self.size - 1, self.border_color)
+        pygame.gfxdraw.filled_circle(self.engine.screen, int(self.p.x), int(self.p.y), int(self.size), self.color)
+        pygame.gfxdraw.aacircle(self.engine.screen, int(self.p.x), int(self.p.y), int(self.size), self.border_color)
+        pygame.gfxdraw.aacircle(self.engine.screen, int(self.p.x), int(self.p.y), int(self.size - 1), self.border_color)

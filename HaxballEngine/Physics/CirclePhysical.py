@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 import pygame
 import math
 from abc import ABC
@@ -5,87 +7,88 @@ from abc import ABC
 import pygame.gfxdraw
 
 from HaxballEngine.Properties import InternalProperties
+from Utils.Types import Color
 
 
 class CirclePhysical(ABC):
 
-    def __init__(self, engine, px, py, number, weight, size, color):
+    def __init__(self, engine, pos: pygame.Vector2, number: int, weight: float, size: float, color: Color):
         self.engine = engine
-        self.number = number
-        self.weight = weight
-        self.size = size  # size used for drawing and collision detection
-        self.hitbox = int(size * 3 / 2)  # hitbox used for kicking the ball
-        self.v_max = 6 / math.pow(self.weight, 2 / 3)  # maximum velocity is non-linear, cause ball was too fast
+        self.number: int = number
+        self.weight: float = weight
+        self.size: float = size  # size used for drawing and collision detection
+        self.hitbox: float = int(size * 3 / 2)  # radius of hitbox used for kicking the ball
+        self.v_max = 8 / math.pow(self.weight, 2 / 3)  # maximum velocity is non-linear, cause ball was too fast
         self.friction = self.weight * 0.2
-        self.color = color
-        self.border_color = (0, 0, 0)
-        self.p = pygame.math.Vector2(px, py)
-        self.v = pygame.math.Vector2(0, 0)
+        self.color: Color = color
+        self.border_color: Color = Color(0, 0, 0)
+
         self.ball_control = 1
-        self.sector = px
 
-    # methods
+        self.v: pygame.Vector2 = pygame.math.Vector2(0, 0)
+        self.p: pygame.Vector2 = pos
 
-    def velocity_add(self, velocity):
-        self.v += velocity
+    def setPos(self, pos: pygame.Vector2):
+        self.p = pos
 
-    def update(self):
+    def setVel(self, vel: pygame.Vector2):
+        self.v = vel
 
-        self.from_sector_remove()
+    def addVel(self, vel: pygame.Vector2):
+        self.v += vel * self.weight
 
-        # update vectors values
-        self.v += -self.v * self.friction
-        self.p += self.v
+    def setMovement(self, vel: pygame.Vector2, pos: pygame.Vector2):
+        # Set given velocity and position
+        # If given pos is less than 0, don't change it
+        if pos.x >= 0 and pos.y >= 0:
+            self.setPos(pos)
 
-        # check if velocity is not bigger than max allowed velocity
+        self.setVel(vel)
+
+    def update(self, dt: float):
+        self.fromSectorRemove()
+
+        # dt: float = 1.0
+
+        # Update vectors values
+        self.v += -self.v * self.friction * dt * 60
+        self.p += self.v * dt * 60
+
+        # Check if velocity is not bigger than max allowed velocity
         if self.v.magnitude() > self.v_max:
             self.v = self.v.normalize() * self.v_max
 
-        # fix object's position with wall collision detection
-        self.engine.walls_collision(self)
+        # Fix object's position with wall collision detection
+        self.engine.wallsCollision(self)
 
-        self.to_sector_add()
+        self.toSectorAdd()
 
-    def from_sector_remove(self):
-        # remove element from currently occupied sector
+    def fromSectorRemove(self):
+        # Remove element from currently occupied sector
         if self in self.engine.collisionSectors[int(self.p.x / InternalProperties.COLLISION_SECTOR_SIZE)][
             int(self.p.y / InternalProperties.COLLISION_SECTOR_SIZE)]:
             self.engine.collisionSectors[int(self.p.x / InternalProperties.COLLISION_SECTOR_SIZE)][
                 int(self.p.y / InternalProperties.COLLISION_SECTOR_SIZE)].remove(self)
 
-    def to_sector_add(self):
+    def toSectorAdd(self):
         # Add element to right sector
         self.engine.collisionSectors[int(self.p.x / InternalProperties.COLLISION_SECTOR_SIZE)][
             int(self.p.y / InternalProperties.COLLISION_SECTOR_SIZE)].append(self)
 
-    def set_move(self, v, p):
-        # set given velocity and position
-        # if given pos is less than 0, don't change it
-        if p[0] >= 0 and p[1] >= 0:
-            self.p.x = p[0]
-            self.p.y = p[1]
+    def getCollisionCandidates(self):
+        # Return list of objects located in nearby sectors
 
-        self.v.x = v[0]
-        self.v.y = v[1]
+        # Get number of nearby sectors (depends on object size)
+        sectorNum = int(self.size / InternalProperties.COLLISION_SECTOR_SIZE) + 1
 
-    def set_p(self, px, py):
-        # set p vector
-        self.p.x = px
-        self.p.y = py
-
-    def get_nearby(self):
-        # return list of objects located in nearby sectors
-
-        # get number of nearby sectors (depends on object size)
-        sector_num = int(self.size * 4 / InternalProperties.COLLISION_SECTOR_SIZE)
-
-        # iterate through sectors and gather all circles
-        objects = []
-        for i in range(int(self.p.x / InternalProperties.COLLISION_SECTOR_SIZE) - sector_num,
-                int(self.p.x / InternalProperties.COLLISION_SECTOR_SIZE) + sector_num + 1):
-            for j in range(int(self.p.y / InternalProperties.COLLISION_SECTOR_SIZE) - sector_num,
-                    int(self.p.y / InternalProperties.COLLISION_SECTOR_SIZE) + sector_num + 1):
+        # Get list of candidates from nearby sectors
+        candidates: List[CirclePhysical] = []
+        for i in range(int(self.p.x / InternalProperties.COLLISION_SECTOR_SIZE) - sectorNum,
+                int(self.p.x / InternalProperties.COLLISION_SECTOR_SIZE) + sectorNum + 1):
+            for j in range(int(self.p.y / InternalProperties.COLLISION_SECTOR_SIZE) - sectorNum,
+                    int(self.p.y / InternalProperties.COLLISION_SECTOR_SIZE) + sectorNum + 1):
                 if 0 <= i < len(self.engine.collisionSectors) and 0 <= j < len(self.engine.collisionSectors[0]):
-                    objects += self.engine.collisionSectors[i][j]
+                    candidates += self.engine.collisionSectors[i][j]
 
-        return objects
+        return candidates
+
