@@ -4,7 +4,6 @@ import pygame
 
 from HaxballEngine.Physics.Drawable import Drawable
 from HaxballEngine.Physics.Post import Post
-from HaxballEngine.Physics.Collision import Collision
 from HaxballEngine.Physics.SphereCollider import SphereCollider
 from HaxballEngine.Properties import Properties
 from Utils.Types import Color

@@ -48,11 +48,11 @@ class CirclePhysical(ABC):
     def update(self, dt: float):
         self.fromSectorRemove()
 
-        # dt: float = 1.0
+        dt: float = dt * InternalProperties.TARGET_FPS
 
         # Update vectors values
-        self.v += -self.v * self.friction * dt * 60
-        self.p += self.v * dt * 60
+        self.v += -self.v * self.friction * dt
+        self.p += self.v * dt
 
         # Check if velocity is not bigger than max allowed velocity
         if self.v.magnitude() > self.v_max:

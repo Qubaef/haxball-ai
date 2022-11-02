@@ -40,7 +40,7 @@ class InternalProperties:
     PITCH_CENTER: Tuple[int, int] = (PITCH_CENTER_X, PITCH_CENTER_Y)
 
     TARGET_FPS: int = 60
-    LOCK_FPS: bool = True
+    LOCK_FPS: bool = False
 
     BORDER_WIDTH: int = 2
 
@@ -55,6 +55,10 @@ class InternalProperties:
 
     TEAM_1_DIR: int = -1
     TEAM_2_DIR: int = 0
+    TEAM_DIRS: Dict[int, int] = {
+        TEAM_1_ID: TEAM_1_DIR,
+        TEAM_2_ID: TEAM_2_DIR
+    }
 
     COUNTDOWN_TIME: int = 0  # in ms
     GOAL_SCORE_TIME: int = 0  # in ms

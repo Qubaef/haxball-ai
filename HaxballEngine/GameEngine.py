@@ -10,7 +10,6 @@ from HaxballEngine.Physics.SphereCollider import SphereCollider
 from HaxballEngine.Pitch.Pitch import Pitch
 from HaxballEngine.Properties import Properties, InternalProperties, ColorPalette
 
-from HaxballEngine.Physics.Collision import Collision
 from Utils.Types import TeamId
 
 

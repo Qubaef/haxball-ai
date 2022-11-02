@@ -3,7 +3,7 @@ import pygame.gfxdraw
 
 from HaxballEngine.Physics.CirclePhysical import CirclePhysical
 from HaxballEngine.Physics.Drawable import Drawable
-from HaxballEngine.Properties import Properties
+from HaxballEngine.Properties import Properties, InternalProperties
 from Utils.Types import Color
 
 
@@ -24,3 +24,17 @@ class Ball(CirclePhysical, Drawable):
         # Draw hitboxes
         if Properties.DEBUG_MODE:
             pygame.gfxdraw.aacircle(self.engine.screen, int(self.p.x), int(self.p.y), int(self.hitbox), (0, 0, 255))
+
+    def getState(self, teamDir: int):
+        xPosRelative: float = abs(self.p.x + teamDir * InternalProperties.SCREEN_WIDTH)
+        yPosRelative: float = abs(self.p.y + teamDir * InternalProperties.SCREEN_HEIGHT)
+        # agentPosXRel: float = abs(agent.p.x + teamDir * InternalProperties.SCREEN_WIDTH) / InternalProperties.SCREEN_WIDTH
+        # agentPosYRel: float = abs(agent.p.y + teamDir * InternalProperties.SCREEN_HEIGHT) / InternalProperties.SCREEN_HEIGHT
+
+        valMultiplier: float = teamDir * 2 + 1
+        xVelRelative: float = self.v.x * valMultiplier
+        yVelRelative: float = self.v.y * valMultiplier
+        # xVelRelative: float = self.v.x * valMultiplier / self.v_max
+        # yVelRelative: float = self.v.y * valMultiplier / self.v_max
+
+        return [xPosRelative, yPosRelative, xVelRelative, yVelRelative]

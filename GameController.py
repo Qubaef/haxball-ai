@@ -1,10 +1,12 @@
 from typing import List
 
+import numpy as np
+
 from HaxballEngine.Physics.Agent import Agent
 from HaxballEngine.GameEngine import GameEngine
 from HaxballEngine.Physics.Ball import Ball
 
-from HaxballEngine.AgentInput import AgentInput
+from AgentInput import AgentInput
 from HaxballEngine.Properties import InternalProperties
 
 
@@ -12,6 +14,7 @@ class GameController(object):
 
     def __init__(self, playersInTeam: int):
         # Initialize game, ball, and players
+        self.playersInTeam = playersInTeam
         self.engine = GameEngine()
 
         self.engine.addBall()
@@ -25,8 +28,8 @@ class GameController(object):
 
         # Update agents movements
         for i in range(len(inputs)):
-            if inputs[i].movementDirection.length() > 0:
-                self.engine.agents[i].addVel(inputs[i].movementDirection.normalize())
+            if inputs[i].movementDir.length() > 0:
+                self.engine.agents[i].addVel(inputs[i].movementDir.normalize())
 
         # Update ball kicks
         for i in range(len(inputs)):
@@ -36,12 +39,58 @@ class GameController(object):
         # Render next frame
         self.engine.update()
 
-    def generate_current_reward(self):
-        # TODO
-        raise NotImplementedError
+    def getState(self, targetAgentId: int):
+        # Get target agent
+        agent: Agent = self.engine.agents[targetAgentId]
 
-        reward_player1 = -(self.player1.p - self.ball.p).length()
-        return reward_player1
+        # Get teammates list
+        teammates: List[Agent] = []
+        for i in range(len(self.engine.agents)):
+            if self.engine.agents[i].teamId == agent.teamId and i != targetAgentId:
+                teammates.append(self.engine.agents[i])
+
+        # Get opponents list
+        opponents: List[Agent] = []
+        for i in range(len(self.engine.agents)):
+            if self.engine.agents[i].teamId != agent.teamId:
+                opponents.append(self.engine.agents[i])
+
+        # Get ball (assuming there is only one ball)
+        ball: Ball = self.engine.balls[0]
+
+        # Calculate state values
+        agentState = agent.getState(InternalProperties.TEAM_DIRS[agent.teamId])
+
+        teammatesState = np.array(
+            [teammate.getState(InternalProperties.TEAM_DIRS[agent.teamId]) for teammate in teammates])
+        opponentsState = np.array(
+            [opponent.getState(InternalProperties.TEAM_DIRS[agent.teamId]) for opponent in opponents])
+        ballState = ball.getState(InternalProperties.TEAM_DIRS[agent.teamId])
+
+        state: np.array = np.array([
+            ballState[0], ballState[1], ballState[2], ballState[3],
+            agentState[0], agentState[1], agentState[2], agentState[3],
+            *teammatesState.flatten(),
+            *opponentsState.flatten()
+        ])
+
+        return state
+
+    def generateCurrentReward(self, targetAgentId: int):
+        # Return distance to ball
+        agent: Agent = self.engine.agents[targetAgentId]
+        ball: Ball = self.engine.balls[0]
+
+        # Vector length
+        return InternalProperties.SCREEN_WIDTH / (ball.p - agent.p).length()
+
+    def reset(self):
+        self.engine = GameEngine()
+        self.engine.addBall()
+
+        for i in range(self.playersInTeam):
+            self.engine.addAgent(InternalProperties.TEAM_1_ID)
+            self.engine.addAgent(InternalProperties.TEAM_2_ID)
 
     def game_quit(self):
         self.engine.quit()

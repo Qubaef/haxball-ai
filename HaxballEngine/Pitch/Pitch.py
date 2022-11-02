@@ -9,7 +9,7 @@ from HaxballEngine.Physics.CirclePhysical import CirclePhysical
 from Utils.Types import TeamId, Color
 
 from HaxballEngine.Properties import InternalProperties, ColorPalette
-from HaxballEngine.Team import Team
+from HaxballEngine.Pitch.Team import Team
 from HaxballEngine.Pitch.Goal import Goal
 from HaxballEngine.Physics.SphereCollider import SphereCollider
 

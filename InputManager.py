@@ -2,7 +2,7 @@ import pygame
 from pygame.locals import *
 
 from GameController import GameController
-from HaxballEngine.AgentInput import AgentInput
+from AgentInput import AgentInput
 from HaxballEngine.Properties import Properties, InternalProperties
 
 
@@ -44,13 +44,13 @@ class InputManager:
         # Parse keyboard inputs
         pygameKeys = pygame.key.get_pressed()
         if pygameKeys[InputManager.KEY_UP]:
-            userInput.movementDirection += (0, -1)
+            userInput.movementDir += (0, -1)
         if pygameKeys[InputManager.KEY_DOWN]:
-            userInput.movementDirection += (0, 1)
+            userInput.movementDir += (0, 1)
         if pygameKeys[InputManager.KEY_RIGHT]:
-            userInput.movementDirection += (1, 0)
+            userInput.movementDir += (1, 0)
         if pygameKeys[InputManager.KEY_LEFT]:
-            userInput.movementDirection += (-1, 0)
+            userInput.movementDir += (-1, 0)
         if pygameKeys[InputManager.KEY_EXIT]:
             shouldClose = True
 
