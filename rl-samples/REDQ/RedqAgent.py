@@ -104,7 +104,7 @@ class RedqAgent():
     def eval(self, state):
         state = torch.from_numpy(state).float().to(self.device)
         _, _, action = self.actor_local.sample(state)
-        return action.detach().cpu()[0]
+        return action.detach().cpu()[0].numpy()
 
     def learn(self, step, experiences):
         """Updates actor, critics and entropy_alpha parameters using given batch of experience tuples.

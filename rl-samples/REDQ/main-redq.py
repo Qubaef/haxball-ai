@@ -28,20 +28,19 @@ def evaluate(frame, eval_runs=5, capture=False):
 
     reward_batch = []
     for i in range(eval_runs):
-        state = eval_env.reset()
+        state = eval_env.reset()[0]
 
         rewards = 0
+        # for j in range(MAX_FRAMES):
         while True:
             action = agent.eval(np.expand_dims(state, axis=0))
             action_v = np.clip(action, action_low, action_high)
-            state, reward, done, _ = eval_env.step(action_v)
-
-            # render the environment
-            eval_env.render("human")
+            state, reward, done, truncated, _ = eval_env.step(action_v)
 
             rewards += reward
-            if done:
+            if done or truncated:
                 break
+
         reward_batch.append(rewards)
     if not capture and writer is not None:
         writer.add_scalar("Test_Reward", np.mean(reward_batch), frame)
@@ -53,7 +52,7 @@ def train(args):
     scores = []
     i_episode = 1
     state = env.reset()
-    state = state.reshape((1, state_size))
+    state = state[0].reshape((1, state_size))
     score = 0
     steps = args.frames
     for step in range(1, steps + 1):
@@ -64,14 +63,14 @@ def train(args):
         action = agent.act(state)
         action_v = action.numpy()
         action_v = np.clip(action_v, action_low, action_high)
-        next_state, reward, done, info = env.step(action_v)
+        next_state, reward, done, truncated, info = env.step(action_v)
         next_state = next_state.reshape((1, state_size))
         agent.step(state, action, reward, next_state, done)
 
         state = next_state
         score += reward
 
-        if done:
+        if done or truncated:
             scores_deque.append(score)
             scores.append(score)
             average_100_scores.append(np.mean(scores_deque))
@@ -79,14 +78,11 @@ def train(args):
                 writer.add_scalar("Average100", np.mean(scores_deque), step)
                 writer.add_scalar("Train_Reward", score, step)
             state = env.reset()
-            state = state.reshape((1, state_size))
+            state = state[0].reshape((1, state_size))
 
-            print('\rEpisode {}  Env. Step: [{}/{}] Train_Reward: {:.2f}  Average100 Score: {:.2f}'.format(i_episode,
-                step, steps, score, np.mean(scores_deque)), end="")
+            print(f'\rEpisode {i_episode}  Env. Step: [{step}/{steps}] Train_Reward: {score:.2f}  Average100 Score: {np.mean(scores_deque):.2f}', end="")
             if i_episode % args.print_every == 0:
-                print \
-                        ('\rEpisode {}  Env. Step: [{}/{}] Train_Reward: {:.2f}  Average100 Score: {:.2f}'.format(
-                        i_episode, step, steps, score, np.mean(scores_deque)))
+                print(f'\rEpisode {i_episode}  Env. Step: [{step}/{steps}] Train_Reward: {score:.2f}  Average100 Score: {np.mean(scores_deque):.2f}')
             score = 0
             i_episode += 1
 
@@ -94,7 +90,7 @@ def train(args):
 
 
 parser = argparse.ArgumentParser(description="")
-parser.add_argument("--env", type=str, default="Pendulum-v0",
+parser.add_argument("--env", type=str, default="MountainCarContinuous-v0",
     help="Environment name, default = Pendulum-v0")
 parser.add_argument("--info", type=str, default="data", help="Information or name of the run")
 parser.add_argument("--frames", type=int, default=1_000_000,
@@ -104,8 +100,8 @@ parser.add_argument("--M", type=int, default=2,
     help="Numbe of subsample set of the emsemble for updating the agent, default is 2 (currently only supports 2!)")
 parser.add_argument("--G", type=int, default=5,
     help="Update-to-Data (UTD) ratio, updates taken per step with the environment, default=20")
-parser.add_argument("--eval_every", type=int, default=400,
-    help="Number of interactions after which the evaluation runs are performed, default = 1000")
+parser.add_argument("--eval_every", type=int, default=1000,
+    help="Number of interactions after which the evaluation runs are performed, default = 10000")
 parser.add_argument("--eval_runs", type=int, default=3, help="Number of evaluation runs performed, default = 1")
 parser.add_argument("--seed", type=int, default=0, help="Seed for the env and torch network weights, default is 0")
 parser.add_argument("--lr", type=float, default=3e-4,
@@ -122,23 +118,36 @@ parser.add_argument("--print_every", type=int, default=100,
 args = parser.parse_args()
 
 if __name__ == "__main__":
+    MAX_FRAMES = 100
+
     writer = SummaryWriter("runs/ " + args.info)
     # writer = None
 
-    env = gym.make(args.env)
-    eval_env = gym.make(args.env)
+    # Overwrite environment to change the max steps
+    # gym.envs.register(
+    #     id="Pendulum-v2",
+    #     entry_point='gym.envs.classic_control:PendulumEnv',
+    #     max_episode_steps=250
+    # )
+
+    renderMode = None
+    # renderMode = "human"
+
+    env = gym.make(args.env, render_mode=renderMode)
+    eval_env = gym.make(args.env, render_mode=renderMode)
     action_high = env.action_space.high[0]
     seed = args.seed
     action_low = env.action_space.low[0]
     torch.manual_seed(seed)
-    env.seed(seed)
-    eval_env.seed(seed + 1)
+    # env.seed(seed)
+    # eval_env.seed(seed + 1)
     np.random.seed(seed)
     state_size = env.observation_space.shape[0]
     action_size = env.action_space.shape[0]
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     replay_buffer = ReplayBuffer(action_size, args.replay_memory, args.batch_size, seed, device)
-    agent = RedqAgent(state_size=state_size,
+    agent = RedqAgent(
+        state_size=state_size,
         action_size=action_size,
         replay_buffer=replay_buffer,
         batch_size=args.batch_size,
