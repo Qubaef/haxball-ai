@@ -10,8 +10,7 @@ from AgentInput import AgentInput
 from HaxballEngine.Properties import InternalProperties
 
 
-class GameController(object):
-
+class GameController:
     def __init__(self, playersInTeam: int):
         # Initialize game, ball, and players
         self.playersInTeam = playersInTeam
@@ -23,7 +22,7 @@ class GameController(object):
             self.engine.addAgent(InternalProperties.TEAM_1_ID)
             self.engine.addAgent(InternalProperties.TEAM_2_ID)
 
-    def nextFrame(self, inputs: List[AgentInput]):
+    def nextFrame(self, inputs: List[AgentInput]) -> None:
         assert len(inputs) == len(self.engine.agents)
 
         # Update agents movements
@@ -39,7 +38,7 @@ class GameController(object):
         # Render next frame
         self.engine.update()
 
-    def getState(self, targetAgentId: int):
+    def getState(self, targetAgentId: int) -> np.ndarray:
         # Get target agent
         agent: Agent = self.engine.agents[targetAgentId]
 
@@ -62,21 +61,37 @@ class GameController(object):
         agentState = agent.getState(InternalProperties.TEAM_DIRS[agent.teamId])
 
         teammatesState = np.array(
-            [teammate.getState(InternalProperties.TEAM_DIRS[agent.teamId]) for teammate in teammates])
+            [
+                teammate.getState(InternalProperties.TEAM_DIRS[agent.teamId])
+                for teammate in teammates
+            ]
+        )
         opponentsState = np.array(
-            [opponent.getState(InternalProperties.TEAM_DIRS[agent.teamId]) for opponent in opponents])
+            [
+                opponent.getState(InternalProperties.TEAM_DIRS[agent.teamId])
+                for opponent in opponents
+            ]
+        )
         ballState = ball.getState(InternalProperties.TEAM_DIRS[agent.teamId])
 
-        state: np.array = np.array([
-            ballState[0], ballState[1], ballState[2], ballState[3],
-            agentState[0], agentState[1], agentState[2], agentState[3],
-            *teammatesState.flatten(),
-            *opponentsState.flatten()
-        ])
+        state: np.array = np.array(
+            [
+                ballState[0],
+                ballState[1],
+                ballState[2],
+                ballState[3],
+                agentState[0],
+                agentState[1],
+                agentState[2],
+                agentState[3],
+                *teammatesState.flatten(),
+                *opponentsState.flatten(),
+            ]
+        )
 
         return state
 
-    def generateCurrentReward(self, targetAgentId: int):
+    def generateCurrentReward(self, targetAgentId: int) -> float:
         # Return distance to ball
         agent: Agent = self.engine.agents[targetAgentId]
         ball: Ball = self.engine.balls[0]
@@ -84,7 +99,7 @@ class GameController(object):
         # Vector length
         return InternalProperties.SCREEN_WIDTH / (ball.p - agent.p).length()
 
-    def reset(self):
+    def reset(self) -> None:
         self.engine = GameEngine()
         self.engine.addBall()
 
@@ -92,5 +107,5 @@ class GameController(object):
             self.engine.addAgent(InternalProperties.TEAM_1_ID)
             self.engine.addAgent(InternalProperties.TEAM_2_ID)
 
-    def game_quit(self):
+    def game_quit(self) -> None:
         self.engine.quit()

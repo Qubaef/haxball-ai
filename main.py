@@ -29,36 +29,35 @@ def startUserGameplay():
     ballPosHeatmap: HeatmapPlot = HeatmapPlot(
         "Ball-pos-heatmap",
         ceil(InternalProperties.SCREEN_WIDTH / heatmapTileSize),
-        ceil(InternalProperties.SCREEN_HEIGHT / heatmapTileSize)
+        ceil(InternalProperties.SCREEN_HEIGHT / heatmapTileSize),
     )
 
     player1PosHeatmap: HeatmapPlot = HeatmapPlot(
         "Player1-pos-heatmap",
         ceil(InternalProperties.SCREEN_WIDTH / heatmapTileSize),
-        ceil(InternalProperties.SCREEN_HEIGHT / heatmapTileSize)
+        ceil(InternalProperties.SCREEN_HEIGHT / heatmapTileSize),
     )
 
     # Main loop of the game
     while not shouldClose:
-        state0 = gameController.getState(0)
-        state1 = gameController.getState(1)
-
-        reward = gameController.generateCurrentReward(0)
-        # print(reward)
+        # state0 = gameController.getState(0)
+        # state1 = gameController.getState(1)
+        #
+        # reward = gameController.generateCurrentReward(0)
 
         # Move every player towards the ball
         ballPos = gameController.engine.balls[0].p
         for i in range(len(agentsInputs)):
             agentsInputs[i].movementDir = ballPos - gameController.engine.agents[i].p
 
-        ballPosPlot.storeVal(frameId,  [ballPos[0], ballPos[1]])
+        ballPosPlot.storeVal(frameId, [ballPos[0], ballPos[1]])
         ballPosHeatmap.storeVal(
-            int(ballPos[0] / heatmapTileSize),
-            int(ballPos[1] / heatmapTileSize), 1
+            int(ballPos[0] / heatmapTileSize), int(ballPos[1] / heatmapTileSize), 1
         )
         player1PosHeatmap.storeVal(
             int(gameController.engine.agents[0].p[0] / heatmapTileSize),
-            int(gameController.engine.agents[0].p[1] / heatmapTileSize), 1
+            int(gameController.engine.agents[0].p[1] / heatmapTileSize),
+            1,
         )
 
         # Update game state

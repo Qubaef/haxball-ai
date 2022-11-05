@@ -13,7 +13,7 @@ class AgentInput:
         pygame.Vector2(-1, -1),
         pygame.Vector2(-1, 1),
         pygame.Vector2(1, -1),
-        pygame.Vector2(1, 1)
+        pygame.Vector2(1, 1),
     ]
 
     def __init__(self):
@@ -33,8 +33,10 @@ class AgentInput:
     def getInputNumber():
         return len(AgentInput.movementDirTranslationList)
 
-    def setInputByIndex(self, stateId: int):
+    def setInputByIndex(self, stateId: int) -> None:
         self.reset()
 
         # Set movement direction
-        self.movementDir = self.movementDirTranslationList[stateId % len(self.movementDirTranslationList)]
+        self.movementDir = self.movementDirTranslationList[
+            stateId % len(self.movementDirTranslationList)
+        ]

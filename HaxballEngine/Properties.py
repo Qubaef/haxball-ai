@@ -55,10 +55,7 @@ class InternalProperties:
 
     TEAM_1_DIR: int = -1
     TEAM_2_DIR: int = 0
-    TEAM_DIRS: Dict[int, int] = {
-        TEAM_1_ID: TEAM_1_DIR,
-        TEAM_2_ID: TEAM_2_DIR
-    }
+    TEAM_DIRS: Dict[int, int] = {TEAM_1_ID: TEAM_1_DIR, TEAM_2_ID: TEAM_2_DIR}
 
     COUNTDOWN_TIME: int = 0  # in ms
     GOAL_SCORE_TIME: int = 0  # in ms
@@ -80,7 +77,5 @@ class ColorPalette:
     TEAM_2: Color = Color(255, 0, 0)
     TEAM: Dict[int, Color] = {
         InternalProperties.TEAM_1_ID: TEAM_1,
-        InternalProperties.TEAM_2_ID: TEAM_2
+        InternalProperties.TEAM_2_ID: TEAM_2,
     }
-
-

@@ -9,18 +9,26 @@ from HaxballEngine.Physics.Post import Post
 class SphereCollider:
     @staticmethod
     def sphereCollisionVelocities(
-            v1: pygame.Vector2, v2: pygame.Vector2,
-            m1: float, m2: float,
-            x1: pygame.Vector2, x2: pygame.Vector2) -> Tuple[pygame.Vector2, pygame.Vector2]:
+        v1: pygame.Vector2,
+        v2: pygame.Vector2,
+        m1: float,
+        m2: float,
+        x1: pygame.Vector2,
+        x2: pygame.Vector2,
+    ) -> Tuple[pygame.Vector2, pygame.Vector2]:
 
         # Calculate new velocities after collision
         mass: float = 2 * m1 / (m1 + m2)
-        v1_new: pygame.Vector2 = v1 - (mass * (v1 - v2).dot(x1 - x2) / pow((x1 - x2).length(), 2)) * (x1 - x2)
-        v2_new: pygame.Vector2 = v2 - (mass * (v2 - v1).dot(x2 - x1) / pow((x2 - x1).length(), 2)) * (x2 - x1)
+        v1_new: pygame.Vector2 = v1 - (
+            mass * (v1 - v2).dot(x1 - x2) / pow((x1 - x2).length(), 2)
+        ) * (x1 - x2)
+        v2_new: pygame.Vector2 = v2 - (
+            mass * (v2 - v1).dot(x2 - x1) / pow((x2 - x1).length(), 2)
+        ) * (x2 - x1)
         return v1_new, v2_new
 
     @staticmethod
-    def collide(circle1: CirclePhysical):
+    def collide(circle1: CirclePhysical) -> None:
         # Check collision with another sphere
 
         # Get candidate collision objects
@@ -52,14 +60,24 @@ class SphereCollider:
 
                     # If collision, calculate new velocities
                     circle1.v, candidate.v = SphereCollider.sphereCollisionVelocities(
-                        circle1.v, candidate.v, circle1.weight, candidate.weight, circle1.p, candidate.p)
+                        circle1.v,
+                        candidate.v,
+                        circle1.weight,
+                        candidate.weight,
+                        circle1.p,
+                        candidate.p,
+                    )
 
                     # Fix positions
                     if not isinstance(circle1, Post):
-                        circle1.p = candidate.p + (circle1.p - candidate.p).normalize() * (circle1.size + candidate.size)
+                        circle1.p = candidate.p + (
+                            circle1.p - candidate.p
+                        ).normalize() * (circle1.size + candidate.size)
 
                     if not isinstance(candidate, Post):
-                        candidate.p = circle1.p + (candidate.p - circle1.p).normalize() * (circle1.size + candidate.size)
+                        candidate.p = circle1.p + (
+                            candidate.p - circle1.p
+                        ).normalize() * (circle1.size + candidate.size)
 
                     # Add spheres to sectors
                     circle1.toSectorAdd()

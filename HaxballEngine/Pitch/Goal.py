@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Any
 
 import pygame
 
@@ -10,8 +10,16 @@ from Utils.Types import Color
 
 
 class Goal(Drawable):
-    def __init__(self, engine, color: Color, p_post_x: int, p_post_y_up: int, p_post_y_down: int, width: int,
-            direction: int):
+    def __init__(
+        self,
+        engine: Any,
+        color: Color,
+        p_post_x: int,
+        p_post_y_up: int,
+        p_post_y_down: int,
+        width: int,
+        direction: int,
+    ):
         self.engine = engine
         self.color: Color = color
         self.x: int = p_post_x
@@ -23,16 +31,24 @@ class Goal(Drawable):
         # Load goal image
         if not Properties.HEADLESS_MODE:
             if direction == -1:
-                self.goalImage = pygame.image.load("Assets/goal_left.png").convert_alpha()
+                self.goalImage = pygame.image.load(
+                    "Assets/goal_left.png"
+                ).convert_alpha()
             elif direction == 0:
-                self.goalImage = pygame.image.load("Assets/goal_right.png").convert_alpha()
+                self.goalImage = pygame.image.load(
+                    "Assets/goal_right.png"
+                ).convert_alpha()
 
             imageSize: Tuple[int, int] = (self.width, self.y_down - self.y_up)
             self.goalImage = pygame.transform.scale(self.goalImage, imageSize)
 
         # Initialize Posts
-        self.postUp: Post = Post(self.engine, pygame.Vector2(self.x, self.y_up), self.color)
-        self.postDown: Post = Post(self.engine, pygame.Vector2(self.x, self.y_down), self.color)
+        self.postUp: Post = Post(
+            self.engine, pygame.Vector2(self.x, self.y_up), self.color
+        )
+        self.postDown: Post = Post(
+            self.engine, pygame.Vector2(self.x, self.y_down), self.color
+        )
 
     def goal_collide(self):
         SphereCollider.collide(self.postUp)
@@ -51,11 +67,11 @@ class Goal(Drawable):
         return self.y_down - self.y_up
 
     def draw(self):
-        self.engine.screen.blit(self.goalImage,
+        self.engine.screen.blit(
+            self.goalImage,
             pygame.rect.Rect(
-                self.get_px(), self.get_py() - 3,
-                self.get_width(), self.get_height()
-            )
+                self.get_px(), self.get_py() - 3, self.get_width(), self.get_height()
+            ),
         )
 
         self.postUp.draw()

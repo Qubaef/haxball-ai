@@ -9,7 +9,7 @@ class Plot(ABC):
         self.name: str = name
 
     @abstractmethod
-    def show(self, saveToPng: bool = False, label: str = ""):
+    def show(self, saveToPng: bool = False, label: str = "") -> None:
         raise NotImplementedError()
 
     @abstractmethod

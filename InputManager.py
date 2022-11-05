@@ -1,5 +1,5 @@
 import pygame
-from pygame.locals import *
+from pygame.locals import K_a, K_d, K_s, K_w, K_ESCAPE, K_r, K_t
 
 from GameController import GameController
 from AgentInput import AgentInput
@@ -35,8 +35,15 @@ class InputManager:
                 if event.key == InputManager.KEY_TEST_MODE:
                     Properties.DEBUG_MODE = not Properties.DEBUG_MODE
                 if event.key == InputManager.KEY_RESET_BALL:
-                    gameController.engine.balls[0].setMovement(pygame.Vector2(0, 0),
-                        pygame.Vector2((InternalProperties.PITCH_CENTER[0], InternalProperties.PITCH_CENTER[1])))
+                    gameController.engine.balls[0].setMovement(
+                        pygame.Vector2(0, 0),
+                        pygame.Vector2(
+                            (
+                                InternalProperties.PITCH_CENTER[0],
+                                InternalProperties.PITCH_CENTER[1],
+                            )
+                        ),
+                    )
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 userInput.kick = True
                 userInput.kickPos = pygame.Vector2(pygame.mouse.get_pos())

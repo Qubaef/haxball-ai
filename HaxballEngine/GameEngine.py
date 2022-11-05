@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Any
 
 import pygame
 import pygame.gfxdraw
@@ -24,7 +24,7 @@ class GameState:
         self.value = value
         self._clock: int = 0
 
-    def update(self, engine, dt: int):
+    def update(self, engine: Any, dt: int) -> None:
         if self == GameState.COUNTDOWN:
             # Update the clock
             self._clock += dt
@@ -52,12 +52,13 @@ class GameState:
 
 
 class GameEngine:
-
     def __init__(self):
         pygame.init()
 
         if not Properties.HEADLESS_MODE:
-            self.screen = pygame.display.set_mode(InternalProperties.SCREEN_SIZE, pygame.SRCALPHA)
+            self.screen = pygame.display.set_mode(
+                InternalProperties.SCREEN_SIZE, pygame.SRCALPHA
+            )
 
         self.gameState: GameState = GameState(GameState.COUNTDOWN)
         self.fpsClock: pygame.time.Clock = pygame.time.Clock()
@@ -66,9 +67,15 @@ class GameEngine:
         self.mousePos: pygame.Vector2 = pygame.Vector2(0, 0)
 
         # 2D array containing arrays, to store object in the sectors and optimise collisions
-        sectorsNumY = ceil(InternalProperties.SCREEN_HEIGHT / InternalProperties.COLLISION_SECTOR_SIZE)
-        sectorsNumX = ceil(InternalProperties.SCREEN_WIDTH / InternalProperties.COLLISION_SECTOR_SIZE)
-        self.collisionSectors = [[[] for j in range(sectorsNumY)] for i in range(sectorsNumX)]
+        sectorsNumY = ceil(
+            InternalProperties.SCREEN_HEIGHT / InternalProperties.COLLISION_SECTOR_SIZE
+        )
+        sectorsNumX = ceil(
+            InternalProperties.SCREEN_WIDTH / InternalProperties.COLLISION_SECTOR_SIZE
+        )
+        self.collisionSectors = [
+            [[] for j in range(sectorsNumY)] for i in range(sectorsNumX)
+        ]
 
         # Initialize pitch
         self.pitch: Pitch = Pitch(self)
@@ -83,30 +90,58 @@ class GameEngine:
 
         # Draw fps
         font: pygame.font.Font = pygame.font.Font(pygame.font.get_default_font(), 13)
-        fpsText: pygame.Surface = font.render(str(int(self.fpsClock.get_fps())), False, [0, 0, 0])
+        fpsText: pygame.Surface = font.render(
+            str(int(self.fpsClock.get_fps())), False, [0, 0, 0]
+        )
         self.screen.blit(fpsText, (0, 0))
 
         # Draw score
         font: pygame.font.Font = pygame.font.Font(pygame.font.get_default_font(), 30)
-        scoreLeft: pygame.Surface = font.render(str(self.pitch.teamLeft.score), False, self.pitch.teamLeft.color)
-        scoreRight: pygame.Surface = font.render(str(self.pitch.teamRight.score), False, self.pitch.teamRight.color)
+        scoreLeft: pygame.Surface = font.render(
+            str(self.pitch.teamLeft.score), False, self.pitch.teamLeft.color
+        )
+        scoreRight: pygame.Surface = font.render(
+            str(self.pitch.teamRight.score), False, self.pitch.teamRight.color
+        )
 
-        self.screen.blit(scoreLeft, (InternalProperties.SCREEN_WIDTH / 10, InternalProperties.SCREEN_HEIGHT / 20))
-        self.screen.blit(scoreRight, (InternalProperties.SCREEN_WIDTH * 9 / 10, InternalProperties.SCREEN_HEIGHT / 20))
+        self.screen.blit(
+            scoreLeft,
+            (
+                InternalProperties.SCREEN_WIDTH / 10,
+                InternalProperties.SCREEN_HEIGHT / 20,
+            ),
+        )
+        self.screen.blit(
+            scoreRight,
+            (
+                InternalProperties.SCREEN_WIDTH * 9 / 10,
+                InternalProperties.SCREEN_HEIGHT / 20,
+            ),
+        )
 
         if self.gameState == GameState.GOAL_SCORED:
-            status_message = font.render('GOAL!', False, (0, 0, 0))
-            self.screen.blit(status_message,
-                (InternalProperties.SCREEN_WIDTH * 3 / 10, InternalProperties.SCREEN_HEIGHT / 20))
+            status_message = font.render("GOAL!", False, (0, 0, 0))
+            self.screen.blit(
+                status_message,
+                (
+                    InternalProperties.SCREEN_WIDTH * 3 / 10,
+                    InternalProperties.SCREEN_HEIGHT / 20,
+                ),
+            )
         elif self.gameState == GameState.RUNNING and self.clock < 500:
-            status_message = font.render('PLAY!', False, (0, 0, 0))
-            self.screen.blit(status_message,
-                (InternalProperties.SCREEN_WIDTH * 3 / 10, InternalProperties.SCREEN_HEIGHT / 20))
+            status_message = font.render("PLAY!", False, (0, 0, 0))
+            self.screen.blit(
+                status_message,
+                (
+                    InternalProperties.SCREEN_WIDTH * 3 / 10,
+                    InternalProperties.SCREEN_HEIGHT / 20,
+                ),
+            )
 
         # Draw pitch
         self.pitch.draw()
 
-    def addAgent(self, teamId: TeamId = None):
+    def addAgent(self, teamId: TeamId = None) -> None:
         if teamId is None:
             if len(self.pitch.teamLeft.agents) >= len(self.pitch.teamRight.agents):
                 teamId = InternalProperties.TEAM_1_ID
@@ -184,27 +219,69 @@ class GameEngine:
         if Properties.DEBUG_MODE:
             # Draw sectors around ball and players
             for agent in self.agents:
-                sector_num = int(agent.size * 4 / InternalProperties.COLLISION_SECTOR_SIZE)
-                for i in range(int(agent.p.x / InternalProperties.COLLISION_SECTOR_SIZE) - sector_num,
-                        int(agent.p.x / InternalProperties.COLLISION_SECTOR_SIZE) + sector_num + 1):
-                    for j in range(int(agent.p.y / InternalProperties.COLLISION_SECTOR_SIZE) - sector_num,
-                            int(agent.p.y / InternalProperties.COLLISION_SECTOR_SIZE) + sector_num + 1):
-                        pygame.draw.rect(self.screen, (0, 255 - ((i + j) % 2) * 50, 0), (
-                            int(agent.p.x / InternalProperties.COLLISION_SECTOR_SIZE) * InternalProperties.COLLISION_SECTOR_SIZE,
-                            int(agent.p.y / InternalProperties.COLLISION_SECTOR_SIZE) * InternalProperties.COLLISION_SECTOR_SIZE,
-                            int(InternalProperties.COLLISION_SECTOR_SIZE),
-                            int(InternalProperties.COLLISION_SECTOR_SIZE)))
+                sector_num = int(
+                    agent.size * 4 / InternalProperties.COLLISION_SECTOR_SIZE
+                )
+                for i in range(
+                    int(agent.p.x / InternalProperties.COLLISION_SECTOR_SIZE)
+                    - sector_num,
+                    int(agent.p.x / InternalProperties.COLLISION_SECTOR_SIZE)
+                    + sector_num
+                    + 1,
+                ):
+                    for j in range(
+                        int(agent.p.y / InternalProperties.COLLISION_SECTOR_SIZE)
+                        - sector_num,
+                        int(agent.p.y / InternalProperties.COLLISION_SECTOR_SIZE)
+                        + sector_num
+                        + 1,
+                    ):
+                        pygame.draw.rect(
+                            self.screen,
+                            (0, 255 - ((i + j) % 2) * 50, 0),
+                            (
+                                int(
+                                    agent.p.x / InternalProperties.COLLISION_SECTOR_SIZE
+                                )
+                                * InternalProperties.COLLISION_SECTOR_SIZE,
+                                int(
+                                    agent.p.y / InternalProperties.COLLISION_SECTOR_SIZE
+                                )
+                                * InternalProperties.COLLISION_SECTOR_SIZE,
+                                int(InternalProperties.COLLISION_SECTOR_SIZE),
+                                int(InternalProperties.COLLISION_SECTOR_SIZE),
+                            ),
+                        )
             for ball in self.balls:
-                sector_num = int(ball.size * 4 / InternalProperties.COLLISION_SECTOR_SIZE)
-                for i in range(int(ball.p.x / InternalProperties.COLLISION_SECTOR_SIZE) - sector_num,
-                        int(ball.p.x / InternalProperties.COLLISION_SECTOR_SIZE) + sector_num + 1):
-                    for j in range(int(ball.p.y / InternalProperties.COLLISION_SECTOR_SIZE) - sector_num,
-                            int(ball.p.y / InternalProperties.COLLISION_SECTOR_SIZE) + sector_num + 1):
-                        pygame.draw.rect(self.screen, (0, 255 - ((i + j) % 2) * 50, 0), (
-                            int(ball.p.x / InternalProperties.COLLISION_SECTOR_SIZE) * InternalProperties.COLLISION_SECTOR_SIZE,
-                            int(ball.p.y / InternalProperties.COLLISION_SECTOR_SIZE) * InternalProperties.COLLISION_SECTOR_SIZE,
-                            int(InternalProperties.COLLISION_SECTOR_SIZE),
-                            int(InternalProperties.COLLISION_SECTOR_SIZE)))
+                sector_num = int(
+                    ball.size * 4 / InternalProperties.COLLISION_SECTOR_SIZE
+                )
+                for i in range(
+                    int(ball.p.x / InternalProperties.COLLISION_SECTOR_SIZE)
+                    - sector_num,
+                    int(ball.p.x / InternalProperties.COLLISION_SECTOR_SIZE)
+                    + sector_num
+                    + 1,
+                ):
+                    for j in range(
+                        int(ball.p.y / InternalProperties.COLLISION_SECTOR_SIZE)
+                        - sector_num,
+                        int(ball.p.y / InternalProperties.COLLISION_SECTOR_SIZE)
+                        + sector_num
+                        + 1,
+                    ):
+                        pygame.draw.rect(
+                            self.screen,
+                            (0, 255 - ((i + j) % 2) * 50, 0),
+                            (
+                                int(ball.p.x / InternalProperties.COLLISION_SECTOR_SIZE)
+                                * InternalProperties.COLLISION_SECTOR_SIZE,
+                                int(ball.p.y / InternalProperties.COLLISION_SECTOR_SIZE)
+                                * InternalProperties.COLLISION_SECTOR_SIZE,
+                                int(InternalProperties.COLLISION_SECTOR_SIZE),
+                                int(InternalProperties.COLLISION_SECTOR_SIZE),
+                            ),
+                        )
 
         # Redraw agents
         for agent in self.agents:
@@ -236,7 +313,9 @@ class GameEngine:
         for ball in self.balls:
             ball.setMovement(
                 pygame.Vector2(0, 0),
-                pygame.Vector2(InternalProperties.PITCH_CENTER_X, InternalProperties.PITCH_CENTER_Y)
+                pygame.Vector2(
+                    InternalProperties.PITCH_CENTER_X, InternalProperties.PITCH_CENTER_Y
+                ),
             )
 
     def quit(self):

@@ -7,14 +7,23 @@ import numpy as np
 
 def hidden_init(layer):
     fan_in = layer.weight.data.size()[0]
-    lim = 1. / np.sqrt(fan_in)
+    lim = 1.0 / np.sqrt(fan_in)
     return -lim, lim
 
 
 class Actor(nn.Module):
     """Actor (Policy) Model."""
 
-    def __init__(self, state_size, action_size, seed, hidden_size=32, init_w=3e-3, log_std_min=-20, log_std_max=2):
+    def __init__(
+        self,
+        state_size,
+        action_size,
+        seed,
+        hidden_size=32,
+        init_w=3e-3,
+        log_std_min=-20,
+        log_std_max=2,
+    ):
         """Initialize parameters and build model.
         Params
         ======
@@ -24,7 +33,7 @@ class Actor(nn.Module):
             fc1_units (int): Number of nodes in first hidden layer
             fc2_units (int): Number of nodes in second hidden layer
         """
-        super(Actor, self).__init__()
+        super().__init__()
         torch.manual_seed(seed)
         self.log_std_min = log_std_min
         self.log_std_max = log_std_max
@@ -57,7 +66,9 @@ class Actor(nn.Module):
         dist = Normal(mu, std)
         e = dist.rsample().to(state.device)
         action = torch.tanh(e)
-        log_prob = (dist.log_prob(e) - torch.log(1 - action.pow(2) + epsilon)).sum(1, keepdim=True)
+        log_prob = (dist.log_prob(e) - torch.log(1 - action.pow(2) + epsilon)).sum(
+            1, keepdim=True
+        )
 
         return action, log_prob, torch.tanh(mu)
 
@@ -74,7 +85,7 @@ class Critic(nn.Module):
             seed (int): Random seed
             hidden_size (int): Number of nodes in the network layers
         """
-        super(Critic, self).__init__()
+        super().__init__()
         torch.manual_seed(seed)
         self.fc1 = nn.Linear(state_size + action_size, hidden_size)
         self.fc2 = nn.Linear(hidden_size, hidden_size)

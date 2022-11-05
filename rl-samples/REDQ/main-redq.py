@@ -8,17 +8,19 @@ import numpy as np
 import gym
 from torch.utils.tensorboard import SummaryWriter
 
-# import pybullet_envs # to run e.g. HalfCheetahBullet-v0 different reward function bullet-v0 starts ~ -1500. pybullet-v0 starts at 0
-
 from ReplayBuffer import ReplayBuffer
 from RedqAgent import RedqAgent
 
 
 def timer(start, end):
-    """ Helper to print training time """
+    """Helper to print training time"""
     hours, rem = divmod(end - start, 3600)
     minutes, seconds = divmod(rem, 60)
-    print("\nTraining Time:  {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
+    print(
+        "\nTraining Time:  {:0>2}:{:0>2}:{:05.2f}".format(
+            int(hours), int(minutes), seconds
+        )
+    )
 
 
 def evaluate(frame, eval_runs=5, capture=False):
@@ -80,9 +82,16 @@ def train(args):
             state = env.reset()
             state = state[0].reshape((1, state_size))
 
-            print(f'\rEpisode {i_episode}  Env. Step: [{step}/{steps}] Train_Reward: {score:.2f}  Average100 Score: {np.mean(scores_deque):.2f}', end="")
+            print(
+                f"\rEpisode {i_episode}  Env. Step: [{step}/{steps}] Train_Reward: {score:.2f}"
+                f"Average100 Score: {np.mean(scores_deque):.2f}",
+                end="",
+            )
             if i_episode % args.print_every == 0:
-                print(f'\rEpisode {i_episode}  Env. Step: [{step}/{steps}] Train_Reward: {score:.2f}  Average100 Score: {np.mean(scores_deque):.2f}')
+                print(
+                    f"\rEpisode {i_episode}  Env. Step: [{step}/{steps}] Train_Reward: {score:.2f}"
+                    f"Average100 Score: {np.mean(scores_deque):.2f}"
+                )
             score = 0
             i_episode += 1
 
@@ -90,30 +99,95 @@ def train(args):
 
 
 parser = argparse.ArgumentParser(description="")
-parser.add_argument("--env", type=str, default="MountainCarContinuous-v0",
-    help="Environment name, default = Pendulum-v0")
-parser.add_argument("--info", type=str, default="data", help="Information or name of the run")
-parser.add_argument("--frames", type=int, default=1_000_000,
-    help="The amount of training interactions with the environment, default is 1mio")
-parser.add_argument("--N", type=int, default=5, help="Number of Q-network ensemble, default is 10")
-parser.add_argument("--M", type=int, default=2,
-    help="Numbe of subsample set of the emsemble for updating the agent, default is 2 (currently only supports 2!)")
-parser.add_argument("--G", type=int, default=5,
-    help="Update-to-Data (UTD) ratio, updates taken per step with the environment, default=20")
-parser.add_argument("--eval_every", type=int, default=1000,
-    help="Number of interactions after which the evaluation runs are performed, default = 10000")
-parser.add_argument("--eval_runs", type=int, default=3, help="Number of evaluation runs performed, default = 1")
-parser.add_argument("--seed", type=int, default=0, help="Seed for the env and torch network weights, default is 0")
-parser.add_argument("--lr", type=float, default=3e-4,
-    help="Actor learning rate of adapting the network weights, default is 3e-4")
-parser.add_argument("--layer_size", type=int, default=256,
-    help="Number of nodes per neural network layer, default is 256")
-parser.add_argument("--replay_memory", type=int, default=int(1e6), help="Size of the Replay memory, default is 1e6")
-parser.add_argument("-bs", "--batch_size", type=int, default=256, help="Batch size, default is 256")
-parser.add_argument("-t", "--tau", type=float, default=0.005, help="Softupdate factor tau, default is 0.005")
-parser.add_argument("-g", "--gamma", type=float, default=0.99, help="discount factor gamma, default is 0.99")
-parser.add_argument("--print_every", type=int, default=100,
-    help="Print recent training results every x epochs, defaut is 100")
+parser.add_argument(
+    "--env",
+    type=str,
+    default="MountainCarContinuous-v0",
+    help="Environment name, default = Pendulum-v0",
+)
+parser.add_argument(
+    "--info", type=str, default="data", help="Information or name of the run"
+)
+parser.add_argument(
+    "--frames",
+    type=int,
+    default=1_000_000,
+    help="The amount of training interactions with the environment, default is 1mio",
+)
+parser.add_argument(
+    "--N", type=int, default=5, help="Number of Q-network ensemble, default is 10"
+)
+parser.add_argument(
+    "--M",
+    type=int,
+    default=2,
+    help="Numbe of subsample set of the emsemble for updating the agent, default is 2 (currently only supports 2!)",
+)
+parser.add_argument(
+    "--G",
+    type=int,
+    default=5,
+    help="Update-to-Data (UTD) ratio, updates taken per step with the environment, default=20",
+)
+parser.add_argument(
+    "--eval_every",
+    type=int,
+    default=1000,
+    help="Number of interactions after which the evaluation runs are performed, default = 10000",
+)
+parser.add_argument(
+    "--eval_runs",
+    type=int,
+    default=3,
+    help="Number of evaluation runs performed, default = 1",
+)
+parser.add_argument(
+    "--seed",
+    type=int,
+    default=0,
+    help="Seed for the env and torch network weights, default is 0",
+)
+parser.add_argument(
+    "--lr",
+    type=float,
+    default=3e-4,
+    help="Actor learning rate of adapting the network weights, default is 3e-4",
+)
+parser.add_argument(
+    "--layer_size",
+    type=int,
+    default=256,
+    help="Number of nodes per neural network layer, default is 256",
+)
+parser.add_argument(
+    "--replay_memory",
+    type=int,
+    default=int(1e6),
+    help="Size of the Replay memory, default is 1e6",
+)
+parser.add_argument(
+    "-bs", "--batch_size", type=int, default=256, help="Batch size, default is 256"
+)
+parser.add_argument(
+    "-t",
+    "--tau",
+    type=float,
+    default=0.005,
+    help="Softupdate factor tau, default is 0.005",
+)
+parser.add_argument(
+    "-g",
+    "--gamma",
+    type=float,
+    default=0.99,
+    help="discount factor gamma, default is 0.99",
+)
+parser.add_argument(
+    "--print_every",
+    type=int,
+    default=100,
+    help="Print recent training results every x epochs, defaut is 100",
+)
 
 args = parser.parse_args()
 
@@ -145,7 +219,9 @@ if __name__ == "__main__":
     state_size = env.observation_space.shape[0]
     action_size = env.action_space.shape[0]
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    replay_buffer = ReplayBuffer(action_size, args.replay_memory, args.batch_size, seed, device)
+    replay_buffer = ReplayBuffer(
+        action_size, args.replay_memory, args.batch_size, seed, device
+    )
     agent = RedqAgent(
         state_size=state_size,
         action_size=action_size,
@@ -160,7 +236,7 @@ if __name__ == "__main__":
         action_prior="uniform",
         N=args.N,
         M=args.M,
-        G=args.G
+        G=args.G,
     )
 
     t0 = time.time()
@@ -170,7 +246,7 @@ if __name__ == "__main__":
     timer(t0, t1)
 
     # save parameter
-    with open('runs/ ' + args.info + ".json", 'w') as f:
+    with open("runs/ " + args.info + ".json", "w") as f:
         json.dump(args.__dict__, f, indent=2)
     hparams = vars(args)
     metric = {"final average 100 train reward": final_average100}

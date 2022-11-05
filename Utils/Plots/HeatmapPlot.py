@@ -12,15 +12,17 @@ class HeatmapPlot(Plot):
         self.xSize: int = xSize
         self.ySize: int = ySize
 
-        self.values: List[List[float]] = [[0 for _ in range(xSize)] for _ in range(ySize)]
+        self.values: List[List[float]] = [
+            [0 for _ in range(xSize)] for _ in range(ySize)
+        ]
 
-    def storeVal(self, xPos: int, yPos: int, val: float):
+    def storeVal(self, xPos: int, yPos: int, val: float) -> None:
         assert 0 <= xPos < self.xSize, "X position must be in range [0, xSize)"
         assert 0 <= yPos < self.ySize, "Y position must be in range [0, ySize)"
 
         self.values[yPos][xPos] += val
 
-    def show(self, saveToPng: bool = False, label: str = ""):
+    def show(self, saveToPng: bool = False, label: str = "") -> None:
         plt.figure(self.name)
         plt.title(self.name)
 
