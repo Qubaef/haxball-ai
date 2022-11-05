@@ -1,13 +1,16 @@
 import os
 from typing import List
 from matplotlib import pyplot as plt
+from torch.utils.tensorboard import SummaryWriter
 
 from Utils.Plots.Plot import Plot
 
 
 class HeatmapPlot(Plot):
-    def __init__(self, name: str, xSize: int, ySize: int):
-        super().__init__(name)
+    def __init__(
+        self, name: str, xSize: int, ySize: int, writer: SummaryWriter, step: int
+    ):
+        super().__init__(name, writer, step)
 
         self.xSize: int = xSize
         self.ySize: int = ySize
@@ -22,17 +25,13 @@ class HeatmapPlot(Plot):
 
         self.values[yPos][xPos] += val
 
-    def show(self, saveToPng: bool = False, label: str = "") -> None:
+    def show(self, label: str = "") -> None:
         plt.figure(self.name)
         plt.title(self.name)
 
         plt.imshow(self.values, cmap="hot", interpolation="nearest")
 
-        if saveToPng:
-            if not os.path.exists(self.OUTPUT_DIR):
-                os.makedirs(self.OUTPUT_DIR)
-
-            plt.savefig(f"{self.OUTPUT_DIR}/{self.name}-{label}.png")
+        self.store_in_tensorboard(f"{self.name}-{label}")
 
         plt.show(block=False)
 

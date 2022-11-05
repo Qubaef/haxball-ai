@@ -1,5 +1,8 @@
+from datetime import datetime
 from math import ceil
 from typing import List
+
+from torch.utils.tensorboard import SummaryWriter
 
 from GameController import GameController
 from AgentInput import AgentInput
@@ -11,7 +14,7 @@ from Utils.Plots.LinePlot import LinePlot
 
 def startUserGameplay():
     agentsInTeam: int = 11
-
+    writer = SummaryWriter(f"runs/ {datetime.now().strftime('%b%d_%H-%M-%S')}")
     # Initialize game
     gameController: GameController = GameController(agentsInTeam)
 
@@ -23,19 +26,23 @@ def startUserGameplay():
 
     # Plots data
     frameId: int = 0
-    ballPosPlot: LinePlot = LinePlot("Ball-pos", "Frame", ["X", "Y"])
+    ballPosPlot: LinePlot = LinePlot("Ball-pos", "Frame", ["X", "Y"], writer, frameId)
 
     heatmapTileSize: int = 100
     ballPosHeatmap: HeatmapPlot = HeatmapPlot(
         "Ball-pos-heatmap",
         ceil(InternalProperties.SCREEN_WIDTH / heatmapTileSize),
         ceil(InternalProperties.SCREEN_HEIGHT / heatmapTileSize),
+        writer,
+        frameId,
     )
 
     player1PosHeatmap: HeatmapPlot = HeatmapPlot(
         "Player1-pos-heatmap",
         ceil(InternalProperties.SCREEN_WIDTH / heatmapTileSize),
         ceil(InternalProperties.SCREEN_HEIGHT / heatmapTileSize),
+        writer,
+        frameId,
     )
 
     # Main loop of the game
@@ -70,9 +77,9 @@ def startUserGameplay():
         if frameId > framesToPlay:
             shouldClose = True
 
-    ballPosPlot.show(True)
-    ballPosHeatmap.show(True)
-    player1PosHeatmap.show(True)
+    ballPosPlot.show()
+    ballPosHeatmap.show()
+    player1PosHeatmap.show()
 
 
 if __name__ == "__main__":
