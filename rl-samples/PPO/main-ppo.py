@@ -7,6 +7,7 @@ import numpy as np
 import gym
 
 from PPO import PPO
+from torch.utils.tensorboard import SummaryWriter
 
 
 # Training
@@ -48,6 +49,8 @@ def train():
 
     random_seed = 0  # set random seed if required (0 = no random seed)
 
+    writer = SummaryWriter(f"runs/ {datetime.now().strftime('%b%d_%H-%M-%S')}")
+
     print("training environment name : " + env_name)
 
     env = gym.make(env_name)
@@ -57,27 +60,7 @@ def train():
 
     action_dim = env.action_space.shape[0]
 
-    # logging
-
-    # log files for multiple runs are NOT overwritten
-    log_dir = "PPO_logs"
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-
-    log_dir = log_dir + "/" + env_name + "/"
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-
     # get number of log files in log directory
-    run_num = 0
-    current_num_files = next(os.walk(log_dir))[2]
-    run_num = len(current_num_files)
-
-    # create new log file for each run
-    log_f_name = log_dir + "/PPO_" + env_name + "_log_" + str(run_num) + ".csv"
-
-    print("current logging run number for " + env_name + " : ", run_num)
-    print("logging at : " + log_f_name)
 
     # checkpointing
     run_num_pretrained = (
@@ -177,10 +160,6 @@ def train():
         "============================================================================================"
     )
 
-    # logging file
-    log_f = open(log_f_name, "w+")
-    log_f.write("episode,timestep,reward\n")
-
     # printing and logging variables
     print_running_reward = 0
     print_running_episodes = 0
@@ -203,6 +182,7 @@ def train():
             action = ppo_agent.select_action(state)
             state, reward, done, _, _ = env.step(action)
 
+            writer.add_scalar("reward", reward, time_step)
             # saving reward and is_terminals
             ppo_agent.buffer.rewards.append(reward)
             ppo_agent.buffer.is_terminals.append(done)
@@ -220,13 +200,11 @@ def train():
 
             # log in logging file
             if time_step % log_freq == 0:
-
                 # log average reward till last episode
                 log_avg_reward = log_running_reward / log_running_episodes
                 log_avg_reward = round(log_avg_reward, 4)
 
-                log_f.write(f"{i_episode},{time_step},{log_avg_reward}\n")
-                log_f.flush()
+                writer.add_scalar("Avg_reward", log_avg_reward, time_step)
 
                 log_running_reward = 0
                 log_running_episodes = 0
@@ -275,7 +253,6 @@ def train():
 
         i_episode += 1
 
-    log_f.close()
     env.close()
 
     # print total training time
