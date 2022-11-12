@@ -52,9 +52,11 @@ class GameState:
 
 
 class GameEngine:
-    def __init__(self):
+    def __init__(self, screen: bool = False):
         pygame.init()
 
+        if screen:
+            Properties.HEADLESS_MODE = False
         if not Properties.HEADLESS_MODE:
             self.screen = pygame.display.set_mode(
                 InternalProperties.SCREEN_SIZE, pygame.SRCALPHA
@@ -73,7 +75,7 @@ class GameEngine:
         sectorsNumX = ceil(
             InternalProperties.SCREEN_WIDTH / InternalProperties.COLLISION_SECTOR_SIZE
         )
-        self.collisionSectors = [
+        self.collisionSectors: List[List] = [
             [[] for j in range(sectorsNumY)] for i in range(sectorsNumX)
         ]
 

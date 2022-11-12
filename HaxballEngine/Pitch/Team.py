@@ -1,10 +1,11 @@
+import random
 from typing import List, Dict, Any
 
 import pygame
 
 from HaxballEngine.Physics.Agent import Agent
 from HaxballEngine.Pitch.Goal import Goal
-from HaxballEngine.Properties import InternalProperties
+from HaxballEngine.Properties import InternalProperties, Properties
 from Utils.Types import Color
 
 
@@ -76,6 +77,14 @@ class Team:
     def resetPositions(self):
         # Reset positions of all agents in the team
         agentsNum: int = len(self.agents)
+
+        # Random reset position to improve learning
+        if Properties.RANDOM_START:
+            for agent in self.agents:
+                self.layout[agentsNum][self.agents.index(agent)] = pygame.Vector2(
+                    random.random(),
+                    random.random(),
+                )
 
         # Find layout best suited for the number of agents
         layoutAgentsNum = max(self.layout.keys())

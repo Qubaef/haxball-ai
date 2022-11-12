@@ -10,11 +10,13 @@ class Properties:
     Modifiable properties impacting runtime of a game.
     """
 
-    USER_INPUTS_ENABLED: bool = True
+    USER_INPUTS_ENABLED: bool = False
 
     DEBUG_MODE: bool = False
 
-    HEADLESS_MODE: bool = False
+    HEADLESS_MODE: bool = True
+
+    RANDOM_START: bool = True
 
 
 class InternalProperties:
