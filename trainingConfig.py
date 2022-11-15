@@ -6,9 +6,9 @@ from torch.utils.tensorboard import SummaryWriter
 class TrainingConfig:
     def __init__(self, state_dim, action_dim):
 
-        self.max_ep_len = 60 * 180  # game take 3 minutes, each second is 60 frames
+        self.max_ep_len = 180 * 30  # game take 3 minutes, each second is 15 frames
         self.max_training_timesteps = int(
-            3e6
+            18e6
         )  # break training loop if timeteps > max_training_timesteps
 
         self.action_std = (
@@ -23,7 +23,7 @@ class TrainingConfig:
         )  # action_std decay frequency (in num timesteps)
 
         # PPO hyperparameters
-        self.update_timestep = self.max_ep_len * 4  # update policy every n timesteps
+        self.update_timestep = self.max_ep_len * 20  # update policy every n timesteps
         self.K_epochs = 80  # update policy for K epochs in one PPO update
 
         self.eps_clip = 0.2  # clip parameter for PPO

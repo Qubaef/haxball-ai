@@ -1,3 +1,4 @@
+from math import sqrt, cos, radians
 from typing import List
 
 import numpy as np
@@ -97,14 +98,25 @@ class GameController:
         agent: Agent = self.engine.agents[targetAgentId]
         ball: Ball = self.engine.balls[0]
 
+        angleBetweenPosAndV = (ball.p - agent.p).angle_to(agent.v)
+        speedToBall = agent.v.length() * cos(radians(angleBetweenPosAndV))
+
         # Calculate distance to ball
         distToBall = (ball.p - agent.p).length()
         # Calculate distance of boal to goal
-        distToGoal = (
-            ball.p
-            + InternalProperties.TEAM_DIRS[agent.teamId]
-            * Vector2(InternalProperties.SCREEN_SIZE)
-        ).length()
+        distToGoal = sqrt(
+            pow(
+                abs(
+                    ball.p.x
+                    + InternalProperties.SCREEN_WIDTH
+                    * InternalProperties.TEAM_DIRS[agent.teamId]
+                )
+                - (InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH)
+                / 2,
+                2,
+            )
+            + pow(ball.p.y - InternalProperties.SCREEN_HEIGHT / 2, 2)
+        )
         # distance of closest opponent to ball
         distToClosestOpponent = min(
             [
@@ -123,14 +135,20 @@ class GameController:
         )
         # TODO: if goal is scored - ???
         goal = 0
-        if self.engine.gameState == GameState.GOAL_SCORED and distToGoal < 10:
-            goal = 1000
-        elif self.engine.gameState == GameState.GOAL_SCORED and distToGoal > 10:
-            goal = -1000
+        if self.engine.gameState == GameState.GOAL_SCORED and distToGoal < 50:
+            goal = 1000000
+            print("GOAL SCORED by team: ", agent.teamId)
+        elif self.engine.gameState == GameState.GOAL_SCORED and distToGoal > 50:
+            goal = -1000000
 
         # Calculate reward for different phases
         if phase == 0:
-            return -distToBall
+            return (
+                speedToBall
+                - (int(distToBall / 50) - 4)
+                + ((InternalProperties.PITCH_WIDTH / 2 - int(distToGoal)) / 25)
+                + goal
+            )
         elif phase == 1:
             return -(distToGoal + distToBall)
         elif phase == 2:

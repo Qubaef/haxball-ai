@@ -4,10 +4,11 @@ from typing import List
 
 from torch.utils.tensorboard import SummaryWriter
 import os
-import training_config
+import trainingConfig
 from GameController import GameController
 from AgentInput import AgentInput
 from HaxballEngine import GameEngine
+from HaxballEngine.GameEngine import GameState
 from HaxballEngine.Properties import InternalProperties
 from InputManager import InputManager
 from Utils.Plots.HeatmapPlot import HeatmapPlot
@@ -29,7 +30,7 @@ def startUserGameplay():
     # Plots data
     frameId: int = 0
     state0 = gameController.getState(0)
-    config = training_config.TrainingConfig(state0.size, 5)
+    config = trainingConfig.TrainingConfig(state0.size, 5)
     ballPosPlot: LinePlot = LinePlot(
         "Ball-pos", "Frame", ["X", "Y"], config.writer, frameId
     )
@@ -100,20 +101,23 @@ def startUserGameplay():
                 avg_reward[i] += reward
                 ppo[i].buffer.rewards.append(reward)
                 ppo[i].buffer.is_terminals.append(
-                    gameController.engine.gameState == GameEngine.GameState.FINISHED
+                    any(
+                        gameController.engine.gameState == state
+                        for state in [GameState.GOAL_SCORED or GameState.FINISHED]
+                    )
+                    or frameId % config.max_ep_len == 0
                 )
-                # Log reward
-                config.writer.add_scalar(f"Agent {i} reward", reward, frameId)
-                if frameId % 1000 == 0:
+                if frameId % config.update_timestep == 0:
                     print(
                         f"Frame {frameId} - Training time {(datetime.now() - startTime)} - "
-                        f"Agent {i} reward: {avg_reward[i] / 1000}"
+                        f"Agent {i} reward: {avg_reward[i] / config.update_timestep}"
                     )
                     config.writer.add_scalar(
-                        f"Agent {i} avg reward", avg_reward[i] / 1000, frameId
+                        f"Agent {i} avg reward",
+                        avg_reward[i] / config.update_timestep,
+                        frameId,
                     )
                     avg_reward[i] = 0
-                if frameId % config.update_timestep == 0:
                     ppo[i].update()
                 if frameId % config.action_std_decay_freq == 0:
                     ppo[i].decay_action_std(

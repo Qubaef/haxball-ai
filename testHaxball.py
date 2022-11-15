@@ -1,7 +1,8 @@
 import os
 from typing import List
 
-import training_config
+from InputManager import InputManager
+import trainingConfig
 from GameController import GameController
 from AgentInput import AgentInput
 from HaxballEngine import GameEngine
@@ -22,7 +23,7 @@ def startUserGameplay():
     frameId: int = 0
 
     state0 = gameController.getState(0)
-    config = training_config.TrainingConfig(state0.size, 5)
+    config = trainingConfig.TrainingConfig(state0.size, 5)
     config.action_std = 0.1
     ppo = []
     for i in range(agentsInTeam * 2):
