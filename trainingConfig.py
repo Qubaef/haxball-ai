@@ -39,3 +39,5 @@ class TrainingConfig:
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.save_model_freq = 10 * self.update_timestep
+        self.use_random_action = True
+        self.use_random_action_freq = 0.5

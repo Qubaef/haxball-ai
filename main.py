@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 from math import ceil
 from typing import List
@@ -68,11 +69,18 @@ def startUserGameplay():
     # Main loop of the game
     avg_reward = [0 for _ in range(agentsInTeam * 2)]
     startTime = datetime.now()
+    last_frame = 0
     while frameId < config.max_training_timesteps:
         for t in range(1, config.max_ep_len + 1):
             for i in range(len(agentsInputs)):
                 state = gameController.getState(i)
-                action = ppo[i].select_action(state)
+                if (
+                    config.use_random_action
+                    and random.random() < config.use_random_action_freq
+                ):
+                    action = ppo[i].select_action(state, True)
+                else:
+                    action = ppo[i].select_action(state)
                 agentsInputs[i].movementDir.x = action[0]
                 agentsInputs[i].movementDir.y = action[1]
                 if phase > 0:
@@ -118,13 +126,22 @@ def startUserGameplay():
                         frameId,
                     )
                     avg_reward[i] = 0
-                    ppo[i].update()
+                    if i == 0:
+                        ppo[i].update()
                 if frameId % config.action_std_decay_freq == 0:
                     ppo[i].decay_action_std(
                         config.action_std_decay_rate, config.min_action_std
                     )
                 if frameId % config.save_model_freq == 0:
-                    ppo[i].save(f"models/{config.training_timestamp}_ppo_{i}.pth")
+                    if i == 0:
+                        ppo[0].save(
+                            f"models/{config.training_timestamp}_ppo_{frameId}.pth"
+                        )
+                        if last_frame > 0:
+                            ppo[1].load(
+                                f"models/{config.training_timestamp}_ppo_{frameId}.pth"
+                            )
+                        last_frame = frameId
 
         gameController.reset()
 

@@ -1,3 +1,5 @@
+import random
+
 import torch
 import torch.nn as nn
 from torch.distributions import MultivariateNormal
@@ -108,6 +110,18 @@ class ActorCritic(nn.Module):
 
         return action.detach(), action_logprob.detach()
 
+    def act_random(self):
+        action_mean = torch.Tensor(
+            [random.uniform(-4, 4) for _ in range(self.action_dim)]
+        ).to(device)
+        cov_mat = torch.diag(self.action_var).unsqueeze(dim=0)
+        dist = MultivariateNormal(action_mean, cov_mat)
+
+        action = dist.sample()
+        action_logprob = dist.log_prob(action)
+
+        return action.detach(), action_logprob.detach()
+
     def evaluate(self, state, action):
         action_mean = self.actor(state)
 
@@ -182,10 +196,14 @@ class PPO:
             "--------------------------------------------------------------------------------------------"
         )
 
-    def select_action(self, state):
-        with torch.no_grad():
+    def select_action(self, state, random=False):
+        if random:
             state = torch.Tensor(state).to(device)
-            action, action_logprob = self.policy_old.act(state)
+            action, action_logprob = self.policy_old.act_random()
+        else:
+            with torch.no_grad():
+                state = torch.Tensor(state).to(device)
+                action, action_logprob = self.policy_old.act(state)
 
         self.buffer.states.append(state)
         self.buffer.actions.append(action)
