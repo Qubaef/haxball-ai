@@ -38,6 +38,13 @@ class RolloutBuffer:
         del self.rewards[:]
         del self.is_terminals[:]
 
+    def append(self, buffer):
+        self.actions.append(buffer.actions)
+        self.states.append(buffer.states)
+        self.logprobs.append(buffer.logprobs)
+        self.rewards.append(buffer.rewards)
+        self.is_terminals.append(buffer.is_terminals)
+
 
 class ActorCritic(nn.Module):
     def __init__(self, state_dim, action_dim, action_std_init):

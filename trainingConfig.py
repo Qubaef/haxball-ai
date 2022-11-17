@@ -24,7 +24,7 @@ class TrainingConfig:
         )  # action_std decay frequency (in num timesteps)
 
         # PPO hyperparameters
-        self.update_timestep = self.max_ep_len * 20  # update policy every n timesteps
+        self.update_timestep = self.max_ep_len * 2  # update policy every n timesteps
         self.K_epochs = 80  # update policy for K epochs in one PPO update
 
         self.eps_clip = 0.2  # clip parameter for PPO
@@ -42,3 +42,4 @@ class TrainingConfig:
         self.save_model_freq = 10 * self.update_timestep
         self.use_random_action = True
         self.use_random_action_freq = 0.5
+        self.cores = 16
