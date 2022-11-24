@@ -8,7 +8,7 @@ class TrainingConfig:
 
         self.max_ep_len = 180 * 30  # game take 3 minutes, each second is 15 frames
         self.max_training_timesteps = int(
-            18e6
+            54e6
         )  # break training loop if timeteps > max_training_timesteps
 
         self.action_std = (
@@ -19,7 +19,8 @@ class TrainingConfig:
             0.1  # minimum action_std (stop decay after action_std <= min_action_std)
         )
         self.action_std_decay_freq = int(
-            2.5e5
+            self.max_training_timesteps
+            / ((self.action_std - self.min_action_std) / self.action_std_decay_rate - 2)
         )  # action_std decay frequency (in num timesteps)
 
         # PPO hyperparameters

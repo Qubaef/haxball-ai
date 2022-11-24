@@ -83,10 +83,9 @@ def startUserGameplay():
                     action = ppo[i].select_action(state)
                 agentsInputs[i].movementDir.x = action[0]
                 agentsInputs[i].movementDir.y = action[1]
-                if phase > 0:
-                    agentsInputs[i].kickPos.x = action[2]
-                    agentsInputs[i].kickPos.y = action[3]
-                    agentsInputs[i].kick = True if action[4] > 0.5 else False
+                agentsInputs[i].kickPos.x = action[2]
+                agentsInputs[i].kickPos.y = action[3]
+                agentsInputs[i].kick = True if action[4] > 0.5 else False
 
             ballPos = gameController.engine.balls[0].p
             ballPosPlot.storeVal(frameId, [ballPos[0], ballPos[1]])
