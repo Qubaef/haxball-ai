@@ -41,7 +41,7 @@ class InternalProperties:
     PITCH_CENTER_Y: int = int(SCREEN_HEIGHT / 2)
     PITCH_CENTER: Tuple[int, int] = (PITCH_CENTER_X, PITCH_CENTER_Y)
 
-    TARGET_FPS: int = 30
+    TARGET_FPS: int = 15
     LOCK_FPS: bool = False
 
     BORDER_WIDTH: int = 2

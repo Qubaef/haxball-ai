@@ -131,6 +131,10 @@ def startUserGameplay():
                     ppo[i].decay_action_std(
                         config.action_std_decay_rate, config.min_action_std
                     )
+                    if i == 0:
+                        config.use_random_action_freq -= (
+                            config.use_random_action_decay_rate
+                        )
                 if frameId % config.save_model_freq == 0:
                     if i == 0:
                         ppo[0].save(

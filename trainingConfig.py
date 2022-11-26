@@ -8,7 +8,7 @@ class TrainingConfig:
 
         self.max_ep_len = 180 * 30  # game take 3 minutes, each second is 15 frames
         self.max_training_timesteps = int(
-            54e6
+            3e6
         )  # break training loop if timeteps > max_training_timesteps
 
         self.action_std = (
@@ -42,3 +42,4 @@ class TrainingConfig:
         self.save_model_freq = 10 * self.update_timestep
         self.use_random_action = True
         self.use_random_action_freq = 0.5
+        self.use_random_action_decay_rate = 0.05
