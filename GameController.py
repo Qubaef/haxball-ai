@@ -101,6 +101,20 @@ class GameController:
         angleBetweenPosAndV = (ball.p - agent.p).angle_to(agent.v)
         speedToBall = agent.v.length() * cos(radians(angleBetweenPosAndV))
 
+        # speed Ball to goal, g
+        margin = (InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH) / 2
+        goal = Vector2(
+            InternalProperties.SCREEN_WIDTH
+            - margin
+            - InternalProperties.PITCH_WIDTH
+            * InternalProperties.TEAM_DIRS[agent.teamId],
+            InternalProperties.SCREEN_HEIGHT / 2,
+        )
+        angleBetweenBallAndGoal = (goal - ball.p).angle_to(ball.v)
+        speedBallToGoal = ball.v.length() * cos(radians(angleBetweenBallAndGoal))
+        # TODO: to improve chance to kick ball
+        if speedBallToGoal < 0:
+            speedBallToGoal = 0
         # Calculate distance to ball
         distToBall = (ball.p - agent.p).length()
         # Calculate distance of boal to goal
@@ -111,8 +125,7 @@ class GameController:
                     + InternalProperties.SCREEN_WIDTH
                     * InternalProperties.TEAM_DIRS[agent.teamId]
                 )
-                - (InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH)
-                / 2,
+                - margin,
                 2,
             )
             + pow(ball.p.y - InternalProperties.SCREEN_HEIGHT / 2, 2)
@@ -148,6 +161,7 @@ class GameController:
                 - (int(distToBall / 50) - 4)
                 + ((InternalProperties.PITCH_WIDTH / 2 - int(distToGoal)) / 25)
                 + goal
+                + speedBallToGoal * 20
             )
         elif phase == 1:
             return -(distToGoal + distToBall)

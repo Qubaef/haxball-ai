@@ -1,6 +1,8 @@
 import os
 from typing import List
 
+import pygame
+
 from InputManager import InputManager
 import trainingConfig
 from GameController import GameController
@@ -59,14 +61,13 @@ def startUserGameplay():
                 action = ppo[i].select_action(state)
                 agentsInputs[i].movementDir.x = action[0]
                 agentsInputs[i].movementDir.y = action[1]
-                agentsInputs[i].kickPos.x = action[2]
-                agentsInputs[i].kickPos.y = action[3]
-                agentsInputs[i].kick = True if action[4] > 0.5 else False
+                # agentsInputs[i].kickPos.x = action[2]
+                # agentsInputs[i].kickPos.y = action[3]
+                # agentsInputs[i].kick = True if action[4] > 0.5 else False
 
             frameId += 1
             # Update game state
             # shouldClose = InputManager.parseUserInputs(gameController, agentsInputs[0])
-            # gameController.engine.balls[0].set_move((0, 0), pygame.mouse.get_pos())
 
             gameController.nextFrame(agentsInputs)
             for i in range(len(agentsInputs)):
