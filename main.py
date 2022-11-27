@@ -21,7 +21,11 @@ import rlSamples.PPO.PPO as PPO
 
 
 def train_subprocess(
-    lastFrame: int, previousLastFrame: int, reward_queue: Queue, proc: int, action_std: float
+    lastFrame: int,
+    previousLastFrame: int,
+    reward_queue: Queue,
+    proc: int,
+    action_std: float,
 ) -> None:
     gameController: GameController = GameController(1)
     phase = 0
@@ -30,7 +34,7 @@ def train_subprocess(
     ppo = []
     state0 = gameController.getState(0)
     avg_reward = [0.0 for _ in range(2)]
-    config = trainingConfig.TrainingConfig(state0.size, 5)
+    config = trainingConfig.TrainingConfig(state0.size, 5, False)
     for i in range(2):
         ppo.append(
             PPO.PPO(
@@ -138,6 +142,7 @@ def startUserGameplay():
         config.K_epochs,
         config.eps_clip,
         config.action_std,
+        device=config.learningDevice,
     )
     # Main loop of the game
     avg_reward = [0 for _ in range(agentsInTeam * 2)]

@@ -36,6 +36,7 @@ def startUserGameplay():
                 config.gamma,
                 config.K_epochs,
                 config.eps_clip,
+                config.action_std,
             )
         )
         # find latest model by datetime recurential waights ending with i.pth

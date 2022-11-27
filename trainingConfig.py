@@ -4,7 +4,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 class TrainingConfig:
-    def __init__(self, state_dim, action_dim):
+    def __init__(self, state_dim, action_dim, tensorboard=True):
 
         self.max_ep_len = 180 * 30  # game take 3 minutes, each second is 15 frames
         self.max_training_timesteps = int(
@@ -24,7 +24,7 @@ class TrainingConfig:
         )  # action_std decay frequency (in num timesteps)
 
         # PPO hyperparameters
-        self.update_timestep = self.max_ep_len * 2  # update policy every n timesteps
+        self.update_timestep = self.max_ep_len * 20  # update policy every n timesteps
         self.K_epochs = 80  # update policy for K epochs in one PPO update
 
         self.eps_clip = 0.2  # clip parameter for PPO
@@ -34,12 +34,14 @@ class TrainingConfig:
         self.lr_critic = 0.001  # learning rate for critic network
 
         self.training_timestamp = datetime.now().strftime("%b%d_%H-%M-%S")
-        self.writer = SummaryWriter(f"runs/{self.training_timestamp}")
+        if tensorboard:
+            self.writer = SummaryWriter(f"runs/{self.training_timestamp}")
 
         # state space dimension
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.save_model_freq = 10 * self.update_timestep
-        self.use_random_action = True
+        self.use_random_action = False
         self.use_random_action_freq = 0.5
         self.cores = 16
+        self.learningDevice = "cuda:0"

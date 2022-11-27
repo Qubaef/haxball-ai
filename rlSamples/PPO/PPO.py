@@ -5,22 +5,6 @@ import torch.nn as nn
 from torch.distributions import MultivariateNormal
 from torch.distributions import Categorical
 
-# set device
-print(
-    "============================================================================================"
-)
-# set device to cpu or cuda
-device = torch.device("cpu")
-# if torch.cuda.is_available():
-#     device = torch.device("cuda:0")
-#     torch.cuda.empty_cache()
-#     print("Device set to : " + str(torch.cuda.get_device_name(device)))
-# else:
-#     print("Device set to : cpu")
-# print(
-#     "============================================================================================"
-# )
-
 
 # PPO Policy
 class RolloutBuffer:
@@ -47,12 +31,13 @@ class RolloutBuffer:
 
 
 class ActorCritic(nn.Module):
-    def __init__(self, state_dim, action_dim, action_std_init):
+    def __init__(self, state_dim, action_dim, action_std_init, device):
         super().__init__()
+        self.device = device
         self.action_dim = action_dim
         self.action_var = torch.full(
             (action_dim,), action_std_init * action_std_init
-        ).to(device)
+        ).to(self.device)
         # actor
         self.actor = nn.Sequential(
             nn.Linear(state_dim, 64),
@@ -102,7 +87,7 @@ class ActorCritic(nn.Module):
     def set_action_std(self, new_action_std):
         self.action_var = torch.full(
             (self.action_dim,), new_action_std * new_action_std
-        ).to(device)
+        ).to(self.device)
 
     def forward(self):
         raise NotImplementedError
@@ -120,7 +105,7 @@ class ActorCritic(nn.Module):
     def act_random(self):
         action_mean = torch.Tensor(
             [random.uniform(-4, 4) for _ in range(self.action_dim)]
-        ).to(device)
+        ).to(self.device)
         cov_mat = torch.diag(self.action_var).unsqueeze(dim=0)
         dist = MultivariateNormal(action_mean, cov_mat)
 
@@ -133,7 +118,7 @@ class ActorCritic(nn.Module):
         action_mean = self.actor(state)
 
         action_var = self.action_var.expand_as(action_mean)
-        cov_mat = torch.diag_embed(action_var).to(device)
+        cov_mat = torch.diag_embed(action_var).to(self.device)
         dist = MultivariateNormal(action_mean, cov_mat)
 
         # For Single Action Environments.
@@ -157,16 +142,20 @@ class PPO:
         K_epochs,
         eps_clip,
         action_std_init=0.6,
+        device="cpu",
     ):
         self.action_std = action_std_init
 
         self.gamma = gamma
         self.eps_clip = eps_clip
         self.K_epochs = K_epochs
+        self.device = device
 
         self.buffer = RolloutBuffer()
 
-        self.policy = ActorCritic(state_dim, action_dim, action_std_init).to(device)
+        self.policy = ActorCritic(
+            state_dim, action_dim, action_std_init, self.device
+        ).to(device)
         self.optimizer = torch.optim.Adam(
             [
                 {"params": self.policy.actor.parameters(), "lr": lr_actor},
@@ -174,7 +163,9 @@ class PPO:
             ]
         )
 
-        self.policy_old = ActorCritic(state_dim, action_dim, action_std_init).to(device)
+        self.policy_old = ActorCritic(
+            state_dim, action_dim, action_std_init, self.device
+        ).to(device)
         self.policy_old.load_state_dict(self.policy.state_dict())
 
         self.MseLoss = nn.MSELoss()
@@ -205,11 +196,11 @@ class PPO:
 
     def select_action(self, state, random=False):
         if random:
-            state = torch.Tensor(state).to(device)
+            state = torch.Tensor(state).to(self.device)
             action, action_logprob = self.policy_old.act_random()
         else:
             with torch.no_grad():
-                state = torch.Tensor(state).to(device)
+                state = torch.Tensor(state).to(self.device)
                 action, action_logprob = self.policy_old.act(state)
 
         self.buffer.states.append(state)
@@ -231,18 +222,24 @@ class PPO:
             rewards.insert(0, discounted_reward)
 
         # Normalizing the rewards
-        rewards = torch.tensor(rewards, dtype=torch.float32).to(device)
+        rewards = torch.tensor(rewards, dtype=torch.float32).to(self.device)
         rewards = (rewards - rewards.mean()) / (rewards.std() + 1e-7)
 
         # convert list to tensor
         old_states = (
-            torch.squeeze(torch.stack(self.buffer.states, dim=0)).detach().to(device)
+            torch.squeeze(torch.stack(self.buffer.states, dim=0))
+            .detach()
+            .to(self.device)
         )
         old_actions = (
-            torch.squeeze(torch.stack(self.buffer.actions, dim=0)).detach().to(device)
+            torch.squeeze(torch.stack(self.buffer.actions, dim=0))
+            .detach()
+            .to(self.device)
         )
         old_logprobs = (
-            torch.squeeze(torch.stack(self.buffer.logprobs, dim=0)).detach().to(device)
+            torch.squeeze(torch.stack(self.buffer.logprobs, dim=0))
+            .detach()
+            .to(self.device)
         )
 
         # Optimize policy for K epochs
