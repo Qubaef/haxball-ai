@@ -1,3 +1,4 @@
+import argparse
 import random
 from datetime import datetime
 from math import ceil
@@ -17,7 +18,7 @@ from Utils.Plots.LinePlot import LinePlot
 import rlSamples.PPO.PPO as PPO
 
 
-def startUserGameplay():
+def startUserGameplay(args):
     # Check if models dir exists
     if not os.path.exists("models"):
         os.makedirs("models")
@@ -31,7 +32,7 @@ def startUserGameplay():
     # Plots data
     frameId: int = 0
     state0 = gameController.getState(0)
-    config = trainingConfig.TrainingConfig(state0.size, 5)
+    config = trainingConfig.TrainingConfig(state0.size, 5, args)
     ballPosPlot: LinePlot = LinePlot(
         "Ball-pos", "Frame", ["X", "Y"], config.writer, frameId
     )
@@ -137,12 +138,10 @@ def startUserGameplay():
                         )
                 if frameId % config.save_model_freq == 0:
                     if i == 0:
-                        ppo[0].save(
-                            f"models/{config.training_timestamp}_ppo_{frameId}.pth"
-                        )
+                        ppo[0].save(f"models/{config.training_name}_ppo_{frameId}.pth")
                         if last_frame > 0:
                             ppo[1].load(
-                                f"models/{config.training_timestamp}_ppo_{frameId}.pth"
+                                f"models/{config.training_name}_ppo_{frameId}.pth"
                             )
                         last_frame = frameId
 
@@ -154,4 +153,8 @@ def startUserGameplay():
 
 
 if __name__ == "__main__":
-    startUserGameplay()
+    # add arg parser add paraemter --name
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--name", type=str, default="test")
+    args = parser.parse_args()
+    startUserGameplay(args)
