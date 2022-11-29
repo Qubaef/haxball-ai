@@ -32,7 +32,7 @@ def startUserGameplay(args):
     # Plots data
     frameId: int = 0
     state0 = gameController.getState(0)
-    config = trainingConfig.TrainingConfig(state0.size, 5, args)
+    config = trainingConfig.TrainingConfig(args, state0.size, 5)
     ballPosPlot: LinePlot = LinePlot(
         "Ball-pos", "Frame", ["X", "Y"], config.writer, frameId
     )
