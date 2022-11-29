@@ -1,3 +1,5 @@
+import random
+
 import torch
 import torch.nn as nn
 from torch.distributions import MultivariateNormal
@@ -9,15 +11,15 @@ print(
 )
 # set device to cpu or cuda
 device = torch.device("cpu")
-if torch.cuda.is_available():
-    device = torch.device("cuda:0")
-    torch.cuda.empty_cache()
-    print("Device set to : " + str(torch.cuda.get_device_name(device)))
-else:
-    print("Device set to : cpu")
-print(
-    "============================================================================================"
-)
+# if torch.cuda.is_available():
+#     device = torch.device("cuda:0")
+#     torch.cuda.empty_cache()
+#     print("Device set to : " + str(torch.cuda.get_device_name(device)))
+# else:
+#     print("Device set to : cpu")
+# print(
+#     "============================================================================================"
+# )
 
 
 # PPO Policy
@@ -47,18 +49,46 @@ class ActorCritic(nn.Module):
         # actor
         self.actor = nn.Sequential(
             nn.Linear(state_dim, 64),
-            nn.Tanh(),
-            nn.Linear(64, 64),
-            nn.Tanh(),
+            nn.ReLU(),
+            nn.Linear(64, 32),
+            nn.ReLU(),
+            nn.Linear(32, 32),
+            nn.ReLU(),
+            nn.Linear(32, 32),
+            nn.ReLU(),
+            nn.Linear(32, 32),
+            nn.ReLU(),
+            nn.Linear(32, 32),
+            nn.ReLU(),
+            nn.Linear(32, 32),
+            nn.ReLU(),
+            nn.Linear(32, 32),
+            nn.ReLU(),
+            nn.Linear(32, 64),
+            nn.ReLU(),
             nn.Linear(64, action_dim),
         )
 
         # critic
         self.critic = nn.Sequential(
             nn.Linear(state_dim, 64),
-            nn.Tanh(),
-            nn.Linear(64, 64),
-            nn.Tanh(),
+            nn.ReLU(),
+            nn.Linear(64, 32),
+            nn.ReLU(),
+            nn.Linear(32, 32),
+            nn.ReLU(),
+            nn.Linear(32, 32),
+            nn.ReLU(),
+            nn.Linear(32, 32),
+            nn.ReLU(),
+            nn.Linear(32, 32),
+            nn.ReLU(),
+            nn.Linear(32, 32),
+            nn.ReLU(),
+            nn.Linear(32, 32),
+            nn.ReLU(),
+            nn.Linear(32, 64),
+            nn.ReLU(),
             nn.Linear(64, 1),
         )
 
@@ -72,6 +102,18 @@ class ActorCritic(nn.Module):
 
     def act(self, state):
         action_mean = self.actor(state)
+        cov_mat = torch.diag(self.action_var).unsqueeze(dim=0)
+        dist = MultivariateNormal(action_mean, cov_mat)
+
+        action = dist.sample()
+        action_logprob = dist.log_prob(action)
+
+        return action.detach(), action_logprob.detach()
+
+    def act_random(self):
+        action_mean = torch.Tensor(
+            [random.uniform(-4, 4) for _ in range(self.action_dim)]
+        ).to(device)
         cov_mat = torch.diag(self.action_var).unsqueeze(dim=0)
         dist = MultivariateNormal(action_mean, cov_mat)
 
@@ -154,10 +196,14 @@ class PPO:
             "--------------------------------------------------------------------------------------------"
         )
 
-    def select_action(self, state):
-        with torch.no_grad():
+    def select_action(self, state, random=False):
+        if random:
             state = torch.Tensor(state).to(device)
-            action, action_logprob = self.policy_old.act(state)
+            action, action_logprob = self.policy_old.act_random()
+        else:
+            with torch.no_grad():
+                state = torch.Tensor(state).to(device)
+                action, action_logprob = self.policy_old.act(state)
 
         self.buffer.states.append(state)
         self.buffer.actions.append(action)

@@ -10,11 +10,13 @@ class Properties:
     Modifiable properties impacting runtime of a game.
     """
 
-    USER_INPUTS_ENABLED: bool = True
+    USER_INPUTS_ENABLED: bool = False
 
     DEBUG_MODE: bool = False
 
-    HEADLESS_MODE: bool = False
+    HEADLESS_MODE: bool = True
+
+    RANDOM_START: bool = True
 
 
 class InternalProperties:
@@ -39,7 +41,7 @@ class InternalProperties:
     PITCH_CENTER_Y: int = int(SCREEN_HEIGHT / 2)
     PITCH_CENTER: Tuple[int, int] = (PITCH_CENTER_X, PITCH_CENTER_Y)
 
-    TARGET_FPS: int = 60
+    TARGET_FPS: int = 15
     LOCK_FPS: bool = False
 
     BORDER_WIDTH: int = 2
