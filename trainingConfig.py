@@ -4,7 +4,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 class TrainingConfig:
-    def __init__(self, state_dim, action_dim):
+    def __init__(self, args, state_dim, action_dim):
 
         self.max_ep_len = 180 * 30  # game take 3 minutes, each second is 15 frames
         self.max_training_timesteps = int(
@@ -34,6 +34,7 @@ class TrainingConfig:
         self.lr_critic = 0.001  # learning rate for critic network
 
         self.training_timestamp = datetime.now().strftime("%b%d_%H-%M-%S")
+        self.training_name = f"{args.name}_{self.training_timestamp}"
         self.writer = SummaryWriter(f"runs/{self.training_timestamp}")
 
         # state space dimension
