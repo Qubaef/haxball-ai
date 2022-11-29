@@ -30,7 +30,10 @@ class GameController:
         # Update agents movements
         for i in range(len(inputs)):
             if inputs[i].movementDir.length() > 0:
-                self.engine.agents[i].addVel(inputs[i].movementDir.normalize())
+                if self.engine.agents[i].teamId == InternalProperties.TEAM_1_ID:
+                    self.engine.agents[i].addVel(inputs[i].movementDir.normalize())
+                else:
+                    self.engine.agents[i].addVel(-inputs[i].movementDir.normalize())
 
         # Update ball kicks
         for i in range(len(inputs)):
