@@ -1,3 +1,4 @@
+import random
 from typing import List, Tuple, Any
 
 import pygame
@@ -311,13 +312,19 @@ class GameEngine:
 
     def resetPositions(self):
         self.pitch.resetPositions()
-
+        if Properties.RANDOM_START:
+            ballPos = pygame.Vector2(
+                random.uniform(0, 2) * InternalProperties.PITCH_CENTER_X,
+                random.uniform(0, 2) * InternalProperties.PITCH_CENTER_Y,
+            )
+        else:
+            ballPos = pygame.Vector2(
+                InternalProperties.PITCH_CENTER_X, InternalProperties.PITCH_CENTER_Y
+            )
         for ball in self.balls:
             ball.setMovement(
                 pygame.Vector2(0, 0),
-                pygame.Vector2(
-                    InternalProperties.PITCH_CENTER_X, InternalProperties.PITCH_CENTER_Y
-                ),
+                ballPos,
             )
 
     def quit(self):
