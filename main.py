@@ -82,6 +82,7 @@ def startUserGameplay(args):
                     action = ppo[i].select_action(state, True)
                 else:
                     action = ppo[i].select_action(state)
+
                 agentsInputs[i].movementDir.x = action[0]
                 agentsInputs[i].movementDir.y = action[1]
                 # agentsInputs[i].kickPos.x = action[2]

@@ -1,3 +1,4 @@
+import argparse
 import os
 from typing import List
 
@@ -11,7 +12,7 @@ from HaxballEngine import GameEngine
 import rlSamples.PPO.PPO as PPO
 
 
-def startUserGameplay():
+def startUserGameplay(args):
     # Check if models dir exists
     agentsInTeam: int = 1
     total_test_episodes = 5
@@ -25,7 +26,7 @@ def startUserGameplay():
     frameId: int = 0
 
     state0 = gameController.getState(0)
-    config = trainingConfig.TrainingConfig(state0.size, 5)
+    config = trainingConfig.TrainingConfig(args, state0.size, 5)
     config.action_std = 0.1
     ppo = []
     for i in range(agentsInTeam * 2):
@@ -59,8 +60,10 @@ def startUserGameplay():
             for i in range(len(agentsInputs)):
                 state = gameController.getState(i)
                 action = ppo[i].select_action(state)
+
                 agentsInputs[i].movementDir.x = action[0]
                 agentsInputs[i].movementDir.y = action[1]
+
                 # agentsInputs[i].kickPos.x = action[2]
                 # agentsInputs[i].kickPos.y = action[3]
                 # agentsInputs[i].kick = True if action[4] > 0.5 else False
@@ -85,4 +88,7 @@ def startUserGameplay():
 
 
 if __name__ == "__main__":
-    startUserGameplay()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--name", type=str, default="test")
+    args = parser.parse_args()
+    startUserGameplay(args)
