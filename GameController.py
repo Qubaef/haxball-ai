@@ -151,10 +151,10 @@ class GameController:
         )
         # TODO: if goal is scored - ???
         goal = 0
-        if self.engine.gameState == GameState.GOAL_SCORED and distToGoal < 50:
+        if self.engine.gameState == GameState.GOAL_SCORED and distToGoal < 250:
             goal = 1000000
             print("GOAL SCORED by team: ", agent.teamId)
-        elif self.engine.gameState == GameState.GOAL_SCORED and distToGoal > 50:
+        elif self.engine.gameState == GameState.GOAL_SCORED and distToGoal > 250:
             goal = -1000000
 
         # Calculate reward for different phases
