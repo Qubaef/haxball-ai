@@ -157,6 +157,8 @@ class GameController:
         elif self.engine.gameState == GameState.GOAL_SCORED and distToGoal > 250:
             goal = -1000000
 
+        length_penalty = self.engine.gameState.frame_since_goal / 100
+
         # Calculate reward for different phases
         if phase == 0:
             return (
@@ -165,6 +167,7 @@ class GameController:
                 + ((InternalProperties.PITCH_WIDTH / 2 - int(distToGoal)) / 25)
                 + goal
                 + speedBallToGoal * 20
+                - length_penalty
             )
         elif phase == 1:
             return -(distToGoal + distToBall)

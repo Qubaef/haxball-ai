@@ -23,6 +23,7 @@ class GameState:
     def __init__(self, value: int):
         self.value = value
         self._clock: int = 0
+        self.frame_since_goal: int = 0
 
     def update(self, engine: Any, dt: int) -> None:
         if self == GameState.COUNTDOWN:
@@ -36,6 +37,7 @@ class GameState:
         elif self == GameState.GOAL_SCORED:
             # Update the clock
             self._clock += dt
+            self.frame_since_goal = 0
 
             if self._clock >= InternalProperties.GOAL_SCORE_TIME:
                 self._clock = 0
@@ -177,11 +179,11 @@ class GameEngine:
         # Update game states
         self.clock += dt
         self.gameState.update(self, int(dt * 1000))
-
         # Update mouse position
         self.mousePos = pygame.Vector2(pygame.mouse.get_pos())
 
         if self.gameState == GameState.RUNNING:
+            self.gameState.frame_since_goal += 1
             # Update objects positions and redraw players
             for agent in self.agents:
                 agent.update(dt)
@@ -311,7 +313,7 @@ class GameEngine:
 
     def resetPositions(self):
         self.pitch.resetPositions()
-
+        self.gameState.frame_since_goal = 0
         for ball in self.balls:
             ball.setMovement(
                 pygame.Vector2(0, 0),
