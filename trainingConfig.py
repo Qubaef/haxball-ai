@@ -8,7 +8,7 @@ class TrainingConfig:
 
         self.max_ep_len = 180 * 30  # game take 3 minutes, each second is 15 frames
         self.max_training_timesteps = int(
-            54e6
+            6e6
         )  # break training loop if timeteps > max_training_timesteps
 
         self.action_std = (

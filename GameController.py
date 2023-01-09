@@ -159,13 +159,7 @@ class GameController:
 
         # Calculate reward for different phases
         if phase == 0:
-            return (
-                speedToBall
-                - (int(distToBall / 50) - 4)
-                + ((InternalProperties.PITCH_WIDTH / 2 - int(distToGoal)) / 25)
-                + goal
-                + speedBallToGoal * 20
-            )
+            return speedToBall + goal + speedBallToGoal * 20
         elif phase == 1:
             return -(distToGoal + distToBall)
         elif phase == 2:
