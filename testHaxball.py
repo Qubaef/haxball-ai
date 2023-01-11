@@ -27,7 +27,7 @@ def startUserGameplay(args):
 
     state0 = gameController.getState(0)
     config = trainingConfig.TrainingConfig(args, state0.size, 5)
-    config.action_std = 0.1
+    config.action_std = 0.45
     ppo = []
     for i in range(agentsInTeam * 2):
         ppo.append(
@@ -70,7 +70,7 @@ def startUserGameplay(args):
 
             frameId += 1
             # Update game state
-            # shouldClose = InputManager.parseUserInputs(gameController, agentsInputs[0])
+            # shouldClose = InputManager.parseUserInputs(gameController, agentsInputs[1])
 
             gameController.nextFrame(agentsInputs)
             for i in range(len(agentsInputs)):
