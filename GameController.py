@@ -107,8 +107,7 @@ class GameController:
         # speed Ball to goal, g
         margin = (InternalProperties.SCREEN_WIDTH - InternalProperties.PITCH_WIDTH) / 2
         goal = Vector2(
-            InternalProperties.SCREEN_WIDTH
-            - margin
+            margin
             - InternalProperties.PITCH_WIDTH
             * InternalProperties.TEAM_DIRS[agent.teamId],
             InternalProperties.SCREEN_HEIGHT / 2,
@@ -116,8 +115,8 @@ class GameController:
         angleBetweenBallAndGoal = (goal - ball.p).angle_to(ball.v)
         speedBallToGoal = ball.v.length() * cos(radians(angleBetweenBallAndGoal))
         # TODO: to improve chance to kick ball
-        if speedBallToGoal < 0:
-            speedBallToGoal = 0
+        # if speedBallToGoal < 0:
+        #     speedBallToGoal = 0
         # Calculate distance to ball
         distToBall = (ball.p - agent.p).length()
         # Calculate distance of boal to goal
@@ -161,16 +160,9 @@ class GameController:
 
         # Calculate reward for different phases
         if phase == 0:
-            return (
-                speedToBall
-                - (int(distToBall / 50) - 4)
-                + ((InternalProperties.PITCH_WIDTH / 2 - int(distToGoal)) / 25)
-                + goal
-                + speedBallToGoal * 20
-                - length_penalty
-            )
+            return goal + speedBallToGoal * 20 - length_penalty
         elif phase == 1:
-            return -(distToGoal + distToBall)
+            return -(distToGoal + distToBall) + speedToBall
         elif phase == 2:
             return -(distToGoal + distToBall) + goal
         elif phase == 3:

@@ -67,10 +67,12 @@ def startUserGameplay(args):
                 config.eps_clip,
             )
         )
+    # Load models
+    for i in range(agentsInTeam * 2):
+        ppo[i].load(f"models/ppo_{i}.pth")
     # Main loop of the game
     avg_reward = [0 for _ in range(agentsInTeam * 2)]
     startTime = datetime.now()
-    last_frame = 0
     while frameId < config.max_training_timesteps:
         for t in range(1, config.max_ep_len + 1):
             for i in range(len(agentsInputs)):
@@ -140,11 +142,6 @@ def startUserGameplay(args):
                 if frameId % config.save_model_freq == 0:
                     if i == 0:
                         ppo[0].save(f"models/{config.training_name}_ppo_{frameId}.pth")
-                        if last_frame > 0:
-                            ppo[1].load(
-                                f"models/{config.training_name}_ppo_{frameId}.pth"
-                            )
-                        last_frame = frameId
 
         gameController.reset()
 
