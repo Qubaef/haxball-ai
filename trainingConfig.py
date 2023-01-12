@@ -6,7 +6,7 @@ from torch.utils.tensorboard import SummaryWriter
 class TrainingConfig:
     def __init__(self, args, state_dim, action_dim):
 
-        self.max_ep_len = 180 * 30  # game take 3 minutes, each second is 15 frames
+        self.max_ep_len = 60 * 30  # game take 3 minutes, each second is 15 frames
         self.max_training_timesteps = int(
             54e6
         )  # break training loop if timeteps > max_training_timesteps
@@ -20,7 +20,7 @@ class TrainingConfig:
         )
         self.action_std_decay_freq = int(
             self.max_training_timesteps
-            / ((self.action_std - self.min_action_std) / self.action_std_decay_rate - 2)
+            / ((self.action_std - self.min_action_std) / self.action_std_decay_rate + 1)
         )  # action_std decay frequency (in num timesteps)
 
         # PPO hyperparameters

@@ -57,7 +57,7 @@ def startUserGameplay(args):
     avg_reward = [0 for _ in range(agentsInTeam * 2)]
     for _ in range(total_test_episodes):
         for t in range(1, config.max_ep_len + 1):
-            for i in range(len(agentsInputs)):
+            for i in range(int(len(agentsInputs) / 2)):
                 state = gameController.getState(i)
                 action = ppo[i].select_action(state)
 
@@ -69,6 +69,19 @@ def startUserGameplay(args):
                 # agentsInputs[i].kick = True if action[4] > 0.5 else False
 
             frameId += 1
+
+            for i in range(int(len(agentsInputs) / 2), len(agentsInputs)):
+                # calculate the direction to the ball, get distance to ball and normalize
+                playerPos = gameController.engine.agents[i].p
+                ballPos = gameController.engine.balls[0].p
+                dirToBall = playerPos - ballPos
+                distToBall = dirToBall
+
+                agentsInputs[i].movementDir.x = distToBall[0] * 0.5
+                agentsInputs[i].movementDir.y = distToBall[1] * 0.5
+                # agentsInputs[i].kickPos.x = action[2]
+                # agentsInputs[i].kickPos.y = action[3]
+                # agentsInputs[i].kick = True if action[4] > 0.5 else False
             # Update game state
             # shouldClose = InputManager.parseUserInputs(gameController, agentsInputs[0])
 

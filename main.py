@@ -55,7 +55,7 @@ def startUserGameplay(args):
     )
 
     ppo = []
-    for i in range(agentsInTeam * 2):
+    for i in range(agentsInTeam):
         ppo.append(
             PPO.PPO(
                 config.state_dim,
@@ -70,10 +70,22 @@ def startUserGameplay(args):
     # Main loop of the game
     avg_reward = [0 for _ in range(agentsInTeam * 2)]
     startTime = datetime.now()
-    last_frame = 0
     while frameId < config.max_training_timesteps:
         for t in range(1, config.max_ep_len + 1):
-            for i in range(len(agentsInputs)):
+            # Get ball and store its stats
+            ballPos = gameController.engine.balls[0].p
+            ballPosPlot.storeVal(frameId, [ballPos[0], ballPos[1]])
+            ballPosHeatmap.storeVal(
+                int(ballPos[0] / heatmapTileSize), int(ballPos[1] / heatmapTileSize), 1
+            )
+            player1PosHeatmap.storeVal(
+                int(gameController.engine.agents[0].p[0] / heatmapTileSize),
+                int(gameController.engine.agents[0].p[1] / heatmapTileSize),
+                1,
+            )
+
+            # Team one actions using PPO
+            for i in range(int(len(agentsInputs) / 2)):
                 state = gameController.getState(i)
                 if (
                     config.use_random_action
@@ -89,16 +101,19 @@ def startUserGameplay(args):
                 # agentsInputs[i].kickPos.y = action[3]
                 # agentsInputs[i].kick = True if action[4] > 0.5 else False
 
-            ballPos = gameController.engine.balls[0].p
-            ballPosPlot.storeVal(frameId, [ballPos[0], ballPos[1]])
-            ballPosHeatmap.storeVal(
-                int(ballPos[0] / heatmapTileSize), int(ballPos[1] / heatmapTileSize), 1
-            )
-            player1PosHeatmap.storeVal(
-                int(gameController.engine.agents[0].p[0] / heatmapTileSize),
-                int(gameController.engine.agents[0].p[1] / heatmapTileSize),
-                1,
-            )
+            # Team two actions using going to ball
+            for i in range(int(len(agentsInputs) / 2), len(agentsInputs)):
+                # calculate the direction to the ball, get distance to ball and normalize
+                playerPos = gameController.engine.agents[i].p
+                dirToBall = playerPos - ballPos
+                distToBall = dirToBall.normalize()
+
+                agentsInputs[i].movementDir.x = distToBall[0] * 0.5
+                agentsInputs[i].movementDir.y = distToBall[1] * 0.5
+                # agentsInputs[i].kickPos.x = action[2]
+                # agentsInputs[i].kickPos.y = action[3]
+                # agentsInputs[i].kick = True if action[4] > 0.5 else False
+
             frameId += 1
             # Update game state
             # shouldClose = InputManager.parseUserInputs(gameController, agentsInputs[0])
@@ -108,14 +123,18 @@ def startUserGameplay(args):
             for i in range(len(agentsInputs)):
                 reward = gameController.generateCurrentReward(i, phase)
                 avg_reward[i] += reward
-                ppo[i].buffer.rewards.append(reward)
-                ppo[i].buffer.is_terminals.append(
-                    any(
-                        gameController.engine.gameState == state
-                        for state in [GameState.GOAL_SCORED or GameState.FINISHED]
+
+                # Only left team is trained
+                if i < len(agentsInputs) / 2:
+                    ppo[i].buffer.rewards.append(reward)
+                    ppo[i].buffer.is_terminals.append(
+                        any(
+                            gameController.engine.gameState == state
+                            for state in [GameState.GOAL_SCORED or GameState.FINISHED]
+                        )
+                        or frameId % config.max_ep_len == 0
                     )
-                    or frameId % config.max_ep_len == 0
-                )
+
                 if frameId % config.update_timestep == 0:
                     print(
                         f"Frame {frameId} - Training time {(datetime.now() - startTime)} - "
@@ -129,22 +148,20 @@ def startUserGameplay(args):
                     avg_reward[i] = 0
                     if i == 0:
                         ppo[i].update()
+
+                # Decay action std
                 if frameId % config.action_std_decay_freq == 0:
-                    ppo[i].decay_action_std(
-                        config.action_std_decay_rate, config.min_action_std
-                    )
                     if i == 0:
+                        ppo[i].decay_action_std(
+                            config.action_std_decay_rate, config.min_action_std
+                        )
                         config.use_random_action_freq -= (
                             config.use_random_action_decay_rate
                         )
+                # Save model
                 if frameId % config.save_model_freq == 0:
                     if i == 0:
                         ppo[0].save(f"models/{config.training_name}_ppo_{frameId}.pth")
-                        if last_frame > 0:
-                            ppo[1].load(
-                                f"models/{config.training_name}_ppo_{frameId}.pth"
-                            )
-                        last_frame = frameId
 
         gameController.reset()
 
