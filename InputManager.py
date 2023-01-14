@@ -9,10 +9,10 @@ from HaxballEngine.Properties import Properties, InternalProperties
 class InputManager:
     KEY_EXIT = K_ESCAPE
 
-    KEY_UP = K_w
-    KEY_DOWN = K_s
-    KEY_LEFT = K_a
-    KEY_RIGHT = K_d
+    KEY_UP = K_s
+    KEY_DOWN = K_w
+    KEY_LEFT = K_d
+    KEY_RIGHT = K_a
 
     KEY_RESET_BALL = K_r
 

@@ -69,7 +69,7 @@ def startUserGameplay(args):
         )
     # Load models
     for i in range(agentsInTeam * 2):
-        ppo[i].load(f"models/ppo_{i}.pth")
+        ppo[i].load("models/ppo_2.pth")
     # Main loop of the game
     avg_reward = [0 for _ in range(agentsInTeam * 2)]
     startTime = datetime.now()

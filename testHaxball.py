@@ -27,7 +27,7 @@ def startUserGameplay(args):
 
     state0 = gameController.getState(0)
     config = trainingConfig.TrainingConfig(args, state0.size, 5)
-    config.action_std = 0.45
+    config.action_std = 0.1
     ppo = []
     for i in range(agentsInTeam * 2):
         ppo.append(
